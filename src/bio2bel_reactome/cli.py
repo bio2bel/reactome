@@ -7,7 +7,7 @@ import sys
 
 import click
 
-from bio2bel_reactome.run import write_belns
+from bio2bel_reactome.run import write_belns, deploy_to_arty
 
 
 @click.group()
@@ -21,6 +21,13 @@ def main():
 def write(output):
     """Writes BEL namespace"""
     write_belns(output)
+
+
+@main.command()
+@click.option('--force', is_flag=True, help="Force knowledge to be uploaded even if not new namespace")
+def deploy(force):
+    """Deploy to Artifactory"""
+    deploy_to_arty(not force)
 
 
 if __name__ == '__main__':

@@ -2,11 +2,18 @@
 
 from __future__ import print_function
 
+import logging
+
 import pandas as pd
 from pybel.constants import NAMESPACE_DOMAIN_BIOPROCESS
 from pybel_tools.definition_utils import write_namespace
+from pybel_tools.resources import get_today_arty_namespace, deploy_namespace
 
 from bio2bel_reactome.constants import names_url
+
+log = logging.getLogger(__name__)
+
+MODULE_NAME = 'reactome'
 
 
 def get_data():
@@ -52,3 +59,18 @@ def write_belns(file=None):
         author_contact="charles.hoyt@scai.fraunhofer.de",
         file=file
     )
+
+
+def deploy_to_arty(quit_fail_redeploy=True):
+    """Gets the data, writes BEL namespace, and writes BEL knowledge to Artifactory"""
+
+    file_name = get_today_arty_namespace(MODULE_NAME)
+
+    with open(file_name, 'w') as file:
+        write_belns(file)
+
+    namespace_deploy_success = deploy_namespace(file_name, MODULE_NAME)
+
+    if not namespace_deploy_success and quit_fail_redeploy:
+        log.warning('did not redeploy')
+        return False
