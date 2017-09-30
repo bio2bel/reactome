@@ -9,19 +9,21 @@ from pybel.constants import NAMESPACE_DOMAIN_BIOPROCESS
 from pybel_tools.definition_utils import write_namespace
 from pybel_tools.resources import get_today_arty_namespace, deploy_namespace
 
-from bio2bel_reactome.constants import names_url
+from bio2bel_reactome.constants import PATHWAY_NAMES_URL
 
 log = logging.getLogger(__name__)
 
 MODULE_NAME = 'reactome'
 
 
-def get_data():
-    """Gets the names list from Reactome. Includes 3 columns - ID's, names, and species
+def get_data(url):
+    """ Converts tab separated txt files to pandas Dataframe
 
+    :param url: url from reactome tab separated file
+    :return: dataframe of the file
     :rtype: pandas.DataFrame
     """
-    df = pd.read_csv(names_url, sep='\t', header=None)
+    df = pd.read_csv(url, sep='\t', header=None)
     return df
 
 
@@ -31,7 +33,7 @@ def get_values(df=None):
     :rtype: set[str]
     """
     if df is None:
-        df = get_data()
+        df = get_data(PATHWAY_NAMES_URL)
 
     values = set(df[1])
 
@@ -50,7 +52,7 @@ def write_belns(file=None):
         namespace_keyword="REACTOME",
         namespace_domain=NAMESPACE_DOMAIN_BIOPROCESS,
         author_name='Charles Tapley Hoyt',
-        citation_name=names_url,
+        citation_name=PATHWAY_NAMES_URL,
         values=values,
         namespace_species='9606',
         namespace_description="Reactome Pathways",
