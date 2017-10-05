@@ -14,7 +14,7 @@ def parser_pathway_hierarchy(pathway_dataframe):
     """ Parser the pathway hierarchy dataframe
 
     :param pandas.DataFrame pathway_dataframe: Parent - child pathway relationships
-    :rtype tuple
+    :rtype list[tuple]
     :return Relationship representation (reactome_parent_id, reactome_child_id)
     """
 

@@ -49,7 +49,6 @@ class Pathway(Base):
     reactome_id = Column(String(255), primary_key=True)
 
     pathway_name = Column(String(255))
-    pathway_species = Column(String(255))
 
     children = relationship(
         'Pathway',
