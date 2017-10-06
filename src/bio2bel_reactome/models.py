@@ -29,14 +29,14 @@ pathway_hierarchy = Table(
 uniprot_pathway = Table(
     UNIPROT_PATHWAY_TABLE,
     Base.metadata,
-    Column('uniprot_id', Integer, ForeignKey(UNIPROT_TABLE_NAME + 'uniprot_id')),
+    Column('uniprot_id', Integer, ForeignKey(UNIPROT_TABLE_NAME + 'id')),
     Column('pathway_id', Integer, ForeignKey(PATHWAY_TABLE_NAME + 'reactome_id'))
 )
 
 chebi_pathway = Table(
     CHEBI_PATHWAY_TABLE,
     Base.metadata,
-    Column('chebi_id', Integer, ForeignKey(CHEBI_TABLE_NAME + 'chebi_id')),
+    Column('chebi_id', Integer, ForeignKey(CHEBI_TABLE_NAME + 'id')),
     Column('pathway_id', Integer, ForeignKey(PATHWAY_TABLE_NAME + 'reactome_id'))
 )
 
@@ -101,16 +101,23 @@ class Species(Base):
     def __repr__(self):
         return self.name
 
+    @property
+    def pathways(self):
+        return [
+            pathway
+            for pathway in self.pathways
+        ]
+
 
 class UniProt(Base):
     """Genes Table"""
 
     __tablename__ = UNIPROT_TABLE_NAME
 
-    uniprot_id = Column(String(255), primary_key=True)
+    id = Column(String(255), primary_key=True)
 
     def __repr__(self):
-        return self.uniprot_id
+        return self.id
 
 
 class Chebi(Base):
@@ -118,7 +125,7 @@ class Chebi(Base):
 
     __tablename__ = CHEBI_TABLE_NAME
 
-    chebi_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     def __repr__(self):
-        return self.chebi_id
+        return self.id
