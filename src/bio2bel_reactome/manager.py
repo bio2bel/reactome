@@ -148,7 +148,8 @@ class Manager(object):
             pathway = self.session.query(Pathway).get(reactome_id)
 
             uniprot = UniProt(
-                id=uniprot_id
+                id=uniprot_id,
+                pathways=pathway
             )
 
             self.session.add(uniprot)
@@ -164,7 +165,8 @@ class Manager(object):
             pathway = self.session.query(Pathway).get(reactome_id)
 
             chebi = Chebi(
-                id=chebi_id
+                id=chebi_id,
+                pathways=pathway
             )
 
             self.session.add(chebi)
