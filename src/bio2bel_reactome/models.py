@@ -22,22 +22,22 @@ CHEBI_PATHWAY_TABLE = '{}_chebi_pathway'.format(TABLE_PREFIX)
 pathway_hierarchy = Table(
     PATHWAY_TABLE_HIERARCHY,
     Base.metadata,
-    Column('parent_id', Integer, ForeignKey('{}.id'.format(PATHWAY_TABLE_NAME)), primary_key=True),
-    Column('child_id', Integer, ForeignKey('{}.id'.format(PATHWAY_TABLE_NAME)), primary_key=True)
+    Column('parent_id', Integer, ForeignKey('{}.reactome_id'.format(PATHWAY_TABLE_NAME)), primary_key=True),
+    Column('child_id', Integer, ForeignKey('{}.reactome_id'.format(PATHWAY_TABLE_NAME)), primary_key=True)
 )
 
 uniprot_pathway = Table(
     UNIPROT_PATHWAY_TABLE,
     Base.metadata,
-    Column('uniprot_id', Integer, ForeignKey(UNIPROT_TABLE_NAME + 'id')),
-    Column('pathway_id', Integer, ForeignKey(PATHWAY_TABLE_NAME + 'reactome_id'))
+    Column('uniprot_id', Integer, ForeignKey('{}.id'.format(UNIPROT_TABLE_NAME))),
+    Column('pathway_id', Integer, ForeignKey('{}.reactome_id'.format(PATHWAY_TABLE_NAME)))
 )
 
 chebi_pathway = Table(
     CHEBI_PATHWAY_TABLE,
     Base.metadata,
-    Column('chebi_id', Integer, ForeignKey(CHEBI_TABLE_NAME + 'id')),
-    Column('pathway_id', Integer, ForeignKey(PATHWAY_TABLE_NAME + 'reactome_id'))
+    Column('chebi_id', Integer, ForeignKey('{}.id'.format(CHEBI_TABLE_NAME))),
+    Column('pathway_id', Integer, ForeignKey('{}.reactome_id'.format(PATHWAY_TABLE_NAME)))
 )
 
 
@@ -53,11 +53,11 @@ class Pathway(Base):
     children = relationship(
         'Pathway',
         secondary=pathway_hierarchy,
-        primaryjoin=(id == pathway_hierarchy.c.parent_id),
-        secondaryjoin=(id == pathway_hierarchy.c.child_id)
+        primaryjoin=(reactome_id == pathway_hierarchy.c.parent_id),
+        secondaryjoin=(reactome_id == pathway_hierarchy.c.child_id)
     )
 
-    species = relationship('Species', back_populates='pathways')
+    species = Column(Integer, ForeignKey('{}.id'.format(SPECIES_TABLE_NAME)))
 
     genes = relationship(
         'UniProt',
@@ -94,9 +94,11 @@ class Species(Base):
 
     __tablename__ = SPECIES_TABLE_NAME
 
-    species_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     name = Column(String(255))
+
+    pathways = relationship("Pathway")
 
     def __repr__(self):
         return self.name

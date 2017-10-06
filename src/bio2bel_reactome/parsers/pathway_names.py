@@ -19,10 +19,10 @@ def parser_pathway_names(pathway_dataframe):
     """
 
     pathways = {}
-    species = set()
+    species_set = set()
 
     for _, (reactome_id, species, name) in pathway_dataframe.iterrows():
         pathways[reactome_id] = (species, name)
-        species.add(species)
+        species_set.add(species)
 
-    return pathways, species
+    return pathways, species_set

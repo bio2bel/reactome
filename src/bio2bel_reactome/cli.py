@@ -3,11 +3,11 @@
 from __future__ import print_function
 
 import logging
-import sys
 
 import click
 
-from bio2bel_reactome.run import write_belns, deploy_to_arty
+from bio2bel_reactome.manager import Manager
+from bio2bel_reactome.run import deploy_to_arty
 
 
 @click.group()
@@ -17,11 +17,11 @@ def main():
 
 
 @main.command()
-@click.option('-o', '--output', type=click.File('w'), default=sys.stdout)
-def write(output):
-    """Writes BEL namespace"""
-    write_belns(output)
-
+def build():
+    """Build the local version of the full HMDB."""
+    m = Manager()
+    click.echo("populate tables")
+    m.populate()
 
 @main.command()
 @click.option('--force', is_flag=True, help="Force knowledge to be uploaded even if not new namespace")

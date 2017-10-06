@@ -25,6 +25,7 @@ class Manager(object):
         self.engine = create_engine(self.connection)
         self.sessionmake = sessionmaker(bind=self.engine, autoflush=False, expire_on_commit=False)
         self.session = self.sessionmake()
+        self.drop_tables() # TODO: delete?
         self.make_tables()
 
     @staticmethod
@@ -56,7 +57,13 @@ class Manager(object):
 
     def make_tables(self, check_first=True):
         """Create tables"""
+        log.info('create table in {}'.format(self.engine.url))
         Base.metadata.create_all(self.engine, checkfirst=check_first)
+
+    def drop_tables(self):
+        """drops all tables in the database"""
+        log.info('drop tables in {}'.format(self.engine.url))
+        Base.metadata.drop_all(self.engine)
 
     @staticmethod
     def ensure(connection=None):
@@ -95,12 +102,10 @@ class Manager(object):
             species_name_to_model[species_name] = new_species
 
         for id, (species, name) in pathways_dict.items():
-
             new_pathway = Pathway(
                 reactome_id=id,
-                pathway_name=name,
-                pathway_species=species,
-                species=species_name_to_model[species]
+                name=name,
+                # species=species_name_to_model[species]
             )
 
             self.session.add(new_pathway)
@@ -134,4 +139,5 @@ class Manager(object):
 
     def populate(self):
         """ Populates all tables"""
-        raise NotImplementedError
+        self._populate_pathways()
+        self._pathway_hierarchy()
