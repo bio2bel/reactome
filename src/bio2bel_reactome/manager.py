@@ -11,7 +11,8 @@ from sqlalchemy.orm import sessionmaker
 from bio2bel_reactome.constants import *
 from bio2bel_reactome.parsers.pathway_names import parser_pathway_names
 from bio2bel_reactome.parsers.pathway_hierarchy import parser_pathway_hierarchy
-from bio2bel_reactome.models import Base, Pathway, Species
+from bio2bel_reactome.parsers.entity_pathways import parser_entity_pathways
+from bio2bel_reactome.models import Base, Pathway, Species, UniProt, Chebi
 from bio2bel_reactome.run import get_data
 
 import logging
@@ -25,7 +26,7 @@ class Manager(object):
         self.engine = create_engine(self.connection)
         self.sessionmake = sessionmaker(bind=self.engine, autoflush=False, expire_on_commit=False)
         self.session = self.sessionmake()
-        self.drop_tables() # TODO: delete?
+        self.drop_tables()  # TODO: delete?
         self.make_tables()
 
     @staticmethod
@@ -105,7 +106,7 @@ class Manager(object):
             new_pathway = Pathway(
                 reactome_id=id,
                 name=name,
-                # species=species_name_to_model[species]
+                species=species_name_to_model[species]
             )
 
             self.session.add(new_pathway)
@@ -133,9 +134,40 @@ class Manager(object):
 
         self.session.commit()
 
-    def _pathway_entity(self, source=None):
+    def _pathway_entity(self, chebi_url=None, uniprot_url=None):
+        """ Populates UniProt and Chebi Tables"""
 
-        raise NotImplementedError
+        if uniprot_url is None:
+            uniprot_url = UNIPROT_PATHWAYS_URL
+
+        uniprot_df = get_data(uniprot_url)
+
+        uniprots = parser_entity_pathways(uniprot_df)
+
+        for uniprot_id, reactome_id, evidence in uniprots:
+            pathway = self.session.query(Pathway).get(reactome_id)
+
+            uniprot = UniProt(
+                id=uniprot_id
+            )
+
+            self.session.add(uniprot)
+
+        if chebi_url is None:
+            chebi_url = CHEBI_PATHWAYS_URL
+
+        chebi_df = get_data(chebi_url)
+
+        chebis = parser_entity_pathways(chebi_df)
+
+        for chebi_id, reactome_id, evidence in chebis:
+            pathway = self.session.query(Pathway).get(reactome_id)
+
+            chebi = Chebi(
+                id=chebi_id
+            )
+
+            self.session.add(chebi)
 
     def populate(self):
         """ Populates all tables"""
