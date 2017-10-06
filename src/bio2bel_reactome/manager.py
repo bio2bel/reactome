@@ -102,7 +102,7 @@ class Manager(object):
             self.session.add(new_species)
             species_name_to_model[species_name] = new_species
 
-        for id, (species, name) in pathways_dict.items():
+        for id, (name, species) in pathways_dict.items():
             new_pathway = Pathway(
                 reactome_id=id,
                 name=name,

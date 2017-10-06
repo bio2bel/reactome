@@ -13,7 +13,7 @@ def parser_pathway_names(pathway_dataframe):
 
     :param pandas.DataFrame pathway_dataframe: Pathway hierarchy as dataframe
     :rtype: dict
-    :return Object representation dictionary (reactome_id: (species, name))
+    :return Object representation dictionary (reactome_id: (name, species))
     :rtype: set
     :return all species names
     """
@@ -21,8 +21,8 @@ def parser_pathway_names(pathway_dataframe):
     pathways = {}
     species_set = set()
 
-    for _, (reactome_id, species, name) in pathway_dataframe.iterrows():
-        pathways[reactome_id] = (species, name)
+    for _, (reactome_id, name, species) in pathway_dataframe.iterrows():
+        pathways[reactome_id] = (name, species)
         species_set.add(species)
 
     return pathways, species_set
