@@ -48,7 +48,7 @@ class Pathway(Base):
 
     reactome_id = Column(String(255), primary_key=True)
 
-    pathway_name = Column(String(255))
+    name = Column(String(255))
 
     children = relationship(
         'Pathway',
@@ -72,7 +72,11 @@ class Pathway(Base):
     )
 
     def __repr__(self):
-        return self.pathway_name
+        return self.name
+
+    @property
+    def pathway_species(self):
+        return self.species.name
 
     def serialize_to_pathway_node(self):
         """Function to serialize to PyBEL node data dictionary.
@@ -81,7 +85,7 @@ class Pathway(Base):
         return {
             FUNCTION: BIOPROCESS,
             NAMESPACE: 'REACTOME',
-            NAME: self.pathway_name
+            NAME: self.name
         }
 
 
@@ -92,10 +96,10 @@ class Species(Base):
 
     species_id = Column(Integer, primary_key=True)
 
-    species_name = Column(String(255))
+    name = Column(String(255))
 
     def __repr__(self):
-        return self.species_name
+        return self.name
 
 
 class UniProt(Base):

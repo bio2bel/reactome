@@ -20,7 +20,7 @@ def parser_entity_pathways(entity_pathway_dataframe):
     """ Parser the entity - pathway dataframe
 
     :param pandas.DataFrame pathway_dataframe: File as dataframe
-    :rtype tuple
+    :rtype: tuple
     :return Object representation dictionary (entity_id, reactome_id, evidence)
     """
 

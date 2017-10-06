@@ -88,7 +88,7 @@ class Manager(object):
 
         for species_name in species_set:
             new_species = Species(
-                species_name=species_name,
+                name=species_name,
             )
 
             self.session.add(new_species)

@@ -12,9 +12,9 @@ def parser_pathway_names(pathway_dataframe):
     """ Parser the pathway name dataframe
 
     :param pandas.DataFrame pathway_dataframe: Pathway hierarchy as dataframe
-    :rtype dict
+    :rtype: dict
     :return Object representation dictionary (reactome_id: (species, name))
-    :rtype set
+    :rtype: set
     :return all species names
     """
 
