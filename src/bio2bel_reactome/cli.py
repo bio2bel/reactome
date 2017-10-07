@@ -32,7 +32,7 @@ def main():
 @main.command()
 @click.option('-v', '--debug', count=True, help="Turn on debugging.")
 def build(debug):
-    """Build the local version of the full HMDB."""
+    """Build the local version of the full Reactome."""
 
     set_debug_param(debug)
 
