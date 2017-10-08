@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-This module populates the UniProt Table and links it with the Pathway table
+This module populates the tables of bio2bel_reactome
 """
 
 import configparser

@@ -20,4 +20,4 @@ PATHWAYS_HIERARCHY_URL = 'http://reactome.org/download/current/ReactomePathwaysR
 UNIPROT_PATHWAYS_URL = 'http://reactome.org/download/current/UniProt2Reactome_All_Levels.txt'
 CHEBI_PATHWAYS_URL = 'http://reactome.org/download/current/ChEBI2Reactome_All_Levels.txt'
 
-REACTOME_PATHWAY_LINK = 'http://reactome.org/PathwayBrowser/#/'
+REACTOME_PATHWAY_LINK = 'http://reactome.org/PathwayBrowser/'
