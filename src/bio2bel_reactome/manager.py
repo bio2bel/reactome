@@ -12,7 +12,7 @@ from bio2bel_reactome.constants import *
 from bio2bel_reactome.parsers.pathway_names import parser_pathway_names
 from bio2bel_reactome.parsers.pathway_hierarchy import parser_pathway_hierarchy
 from bio2bel_reactome.parsers.entity_pathways import parser_entity_pathways
-from bio2bel_reactome.models import Base, Pathway, Species, UniProt, Chebi
+from bio2bel_reactome.models import Base, Pathway, Species, Protein, Chemical
 from bio2bel_reactome.run import get_data
 
 import logging
@@ -26,8 +26,8 @@ class Manager(object):
         self.engine = create_engine(self.connection)
         self.sessionmake = sessionmaker(bind=self.engine, autoflush=False, expire_on_commit=False)
         self.session = self.sessionmake()
-        self.drop_tables()  # TODO: delete?
-        self.make_tables()
+        self.drop_tables()  # TODO: delete
+        self.make_tables()  # TODO: delete
 
     @staticmethod
     def get_connection(connection=None):
@@ -106,7 +106,7 @@ class Manager(object):
             new_pathway = Pathway(
                 reactome_id=id,
                 name=name,
-                species=species_name_to_model[species]
+                species=[species_name_to_model[species]]
             )
 
             self.session.add(new_pathway)
@@ -127,8 +127,8 @@ class Manager(object):
         pathways_hierarchy = parser_pathway_hierarchy(df)
 
         for parent_id, child_id in pathways_hierarchy:
-            parent = self.session.query(Pathway).get(parent_id)
-            child = self.session.query(Pathway).get(child_id)
+            parent = self.session.query(Pathway).filter(Pathway.reactome_id == parent_id).one()
+            child = self.session.query(Pathway).filter(Pathway.reactome_id == child_id).one()
 
             parent.children.append(child)
 
@@ -145,14 +145,14 @@ class Manager(object):
         uniprots = parser_entity_pathways(uniprot_df)
 
         for uniprot_id, reactome_id, evidence in uniprots:
-            pathway = self.session.query(Pathway).get(reactome_id)
+            pathway = self.session.query(Pathway).filter(Pathway.reactome_id == reactome_id).one()
 
-            uniprot = UniProt(
-                id=uniprot_id,
+            protein = Protein(
+                uniprot_id=uniprot_id,
                 pathways=pathway
             )
 
-            self.session.add(uniprot)
+            self.session.add(protein)
 
         if chebi_url is None:
             chebi_url = CHEBI_PATHWAYS_URL
@@ -162,14 +162,14 @@ class Manager(object):
         chebis = parser_entity_pathways(chebi_df)
 
         for chebi_id, reactome_id, evidence in chebis:
-            pathway = self.session.query(Pathway).get(reactome_id)
+            pathway = self.session.query(Pathway).filter(Pathway.reactome_id == reactome_id).one()
 
-            chebi = Chebi(
-                id=chebi_id,
+            chemical = Chemical(
+                chebi_id=chebi_id,
                 pathways=pathway
             )
 
-            self.session.add(chebi)
+            self.session.add(chemical)
 
     def populate(self):
         """ Populates all tables"""
