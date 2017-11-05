@@ -79,6 +79,14 @@ class Manager(object):
 
     """Custom Methods to Populate the DB"""
 
+    def get_pathway_by_id(self, reactome_id):
+        """Gets a pathway by its reactome id
+
+        :param reactome_id:
+        :rtype: Optional[Pathway]
+        """
+        return self.session.query(Pathway).filter(Pathway.reactome_id == reactome_id).one_or_none()
+
     def _populate_pathways(self, source=None):
         """ Populate pathway table
 
@@ -127,8 +135,8 @@ class Manager(object):
         pathways_hierarchy = parser_pathway_hierarchy(df)
 
         for parent_id, child_id in pathways_hierarchy:
-            parent = self.session.query(Pathway).filter(Pathway.reactome_id == parent_id).one()
-            child = self.session.query(Pathway).filter(Pathway.reactome_id == child_id).one()
+            parent = self.get_pathway_by_id(parent_id)
+            child = self.get_pathway_by_id(child_id)
 
             parent.children.append(child)
 
@@ -145,7 +153,7 @@ class Manager(object):
         uniprots = parser_entity_pathways(uniprot_df)
 
         for uniprot_id, reactome_id, evidence in uniprots:
-            pathway = self.session.query(Pathway).filter(Pathway.reactome_id == reactome_id).one()
+            pathway = self.get_pathway_by_id(reactome_id)
 
             protein = Protein(
                 uniprot_id=uniprot_id,
@@ -162,7 +170,7 @@ class Manager(object):
         chebis = parser_entity_pathways(chebi_df)
 
         for chebi_id, reactome_id, evidence in chebis:
-            pathway = self.session.query(Pathway).filter(Pathway.reactome_id == reactome_id).one()
+            pathway = self.get_pathway_by_id(reactome_id)
 
             chemical = Chemical(
                 chebi_id=chebi_id,
