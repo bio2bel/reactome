@@ -114,13 +114,6 @@ class Species(Base):
     def __repr__(self):
         return self.name
 
-    @property
-    def pathways(self):
-        return [
-            pathway
-            for pathway in self.pathways
-        ]
-
 
 class Protein(Base):
     """Protein Table"""
