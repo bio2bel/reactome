@@ -5,17 +5,17 @@ This module populates the tables of bio2bel_reactome
 """
 
 import configparser
+import logging
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from bio2bel_reactome.constants import *
-from bio2bel_reactome.parsers.pathway_names import parser_pathway_names
-from bio2bel_reactome.parsers.pathway_hierarchy import parser_pathway_hierarchy
+from bio2bel_reactome.models import Base, Chemical, Pathway, Protein, Species
 from bio2bel_reactome.parsers.entity_pathways import parser_entity_pathways
-from bio2bel_reactome.models import Base, Pathway, Species, Protein, Chemical
+from bio2bel_reactome.parsers.pathway_hierarchy import parser_pathway_hierarchy
+from bio2bel_reactome.parsers.pathway_names import parser_pathway_names
 from bio2bel_reactome.run import get_data
-
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -24,8 +24,8 @@ class Manager(object):
     def __init__(self, connection=None):
         self.connection = self.get_connection(connection)
         self.engine = create_engine(self.connection)
-        self.sessionmake = sessionmaker(bind=self.engine, autoflush=False, expire_on_commit=False)
-        self.session = self.sessionmake()
+        self.session_maker = sessionmaker(bind=self.engine, autoflush=False, expire_on_commit=False)
+        self.session = self.session_maker()
         self.drop_tables()  # TODO: delete
         self.make_tables()  # TODO: delete
 
