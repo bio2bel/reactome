@@ -86,10 +86,6 @@ class Pathway(Base):
     def __repr__(self):
         return self.name
 
-    @property
-    def pathway_species(self):
-        return self.species.name
-
     def as_pybel_dict(self):
         """Function to serialize to PyBEL node data dictionary.
         :rtype: dict
@@ -99,7 +95,6 @@ class Pathway(Base):
             NAMESPACE: 'REACTOME',
             NAME: self.name,
             IDENTIFIER: self.reactome_id
-
         }
 
 
@@ -147,3 +142,13 @@ class Chemical(Base):
 
     def __repr__(self):
         return self.chebi_id
+
+    def as_pybel_dict(self):
+        """Function to serialize to PyBEL node data dictionary.
+        :rtype: dict
+        """
+        return {
+            FUNCTION: BIOPROCESS,
+            NAMESPACE: 'CHEBI',
+            IDENTIFIER: self.chebi_id
+        }
