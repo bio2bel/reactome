@@ -14,10 +14,10 @@ TABLE_PREFIX = 'reactome'
 PATHWAY_TABLE_NAME = '{}_pathway'.format(TABLE_PREFIX)
 PATHWAY_TABLE_HIERARCHY = '{}_pathway_hierarchy'.format(TABLE_PREFIX)
 SPECIES_TABLE_NAME = '{}_species'.format(TABLE_PREFIX)
-PROTEIN_TABLE_NAME = '{}_uniprot'.format(TABLE_PREFIX)
+PROTEIN_TABLE_NAME = '{}_protein'.format(TABLE_PREFIX)
 CHEMICAL_TABLE_NAME = '{}_chemical'.format(TABLE_PREFIX)
-PROTEIN_PATHWAY_TABLE = '{}_uniprot_pathway'.format(TABLE_PREFIX)
-CHEMICAL_PATHWAY_TABLE = '{}_chebi_pathway'.format(TABLE_PREFIX)
+PROTEIN_PATHWAY_TABLE = '{}_protein_pathway'.format(TABLE_PREFIX)
+CHEMICAL_PATHWAY_TABLE = '{}_chemical_pathway'.format(TABLE_PREFIX)
 SPECIES_PATHWAY_TABLE = '{}_species_pathway'.format(TABLE_PREFIX)
 
 pathway_hierarchy = Table(
@@ -30,14 +30,14 @@ pathway_hierarchy = Table(
 protein_pathway = Table(
     PROTEIN_PATHWAY_TABLE,
     Base.metadata,
-    Column('uniprot_id', Integer, ForeignKey('{}.id'.format(PROTEIN_TABLE_NAME))),
+    Column('protein_id', Integer, ForeignKey('{}.id'.format(PROTEIN_TABLE_NAME))),
     Column('pathway_id', Integer, ForeignKey('{}.id'.format(PATHWAY_TABLE_NAME)))
 )
 
 chemical_pathway = Table(
     CHEMICAL_PATHWAY_TABLE,
     Base.metadata,
-    Column('chebi_id', Integer, ForeignKey('{}.id'.format(CHEMICAL_TABLE_NAME))),
+    Column('chemical_id', Integer, ForeignKey('{}.id'.format(CHEMICAL_TABLE_NAME))),
     Column('pathway_id', Integer, ForeignKey('{}.id'.format(PATHWAY_TABLE_NAME)))
 )
 
