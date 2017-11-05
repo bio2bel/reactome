@@ -2,11 +2,11 @@
 
 """Reactome database model"""
 
-from sqlalchemy import Column, String, Integer, Table, ForeignKey
+from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-from pybel.constants import FUNCTION, NAMESPACE, NAME, BIOPROCESS
+from pybel.constants import BIOPROCESS, FUNCTION, IDENTIFIER, NAME, NAMESPACE
 
 Base = declarative_base()
 
@@ -14,10 +14,10 @@ TABLE_PREFIX = 'reactome'
 PATHWAY_TABLE_NAME = '{}_pathway'.format(TABLE_PREFIX)
 PATHWAY_TABLE_HIERARCHY = '{}_pathway_hierarchy'.format(TABLE_PREFIX)
 SPECIES_TABLE_NAME = '{}_species'.format(TABLE_PREFIX)
-UNIPROT_TABLE_NAME = '{}_uniprot'.format(TABLE_PREFIX)
-CHEBI_TABLE_NAME = '{}_chebi'.format(TABLE_PREFIX)
-UNIPROT_PATHWAY_TABLE = '{}_uniprot_pathway'.format(TABLE_PREFIX)
-CHEBI_PATHWAY_TABLE = '{}_chebi_pathway'.format(TABLE_PREFIX)
+PROTEIN_TABLE_NAME = '{}_uniprot'.format(TABLE_PREFIX)
+CHEMICAL_TABLE_NAME = '{}_chemical'.format(TABLE_PREFIX)
+PROTEIN_PATHWAY_TABLE = '{}_uniprot_pathway'.format(TABLE_PREFIX)
+CHEMICAL_PATHWAY_TABLE = '{}_chebi_pathway'.format(TABLE_PREFIX)
 SPECIES_PATHWAY_TABLE = '{}_species_pathway'.format(TABLE_PREFIX)
 
 pathway_hierarchy = Table(
@@ -27,17 +27,17 @@ pathway_hierarchy = Table(
     Column('child_id', Integer, ForeignKey('{}.id'.format(PATHWAY_TABLE_NAME)), primary_key=True)
 )
 
-uniprot_pathway = Table(
-    UNIPROT_PATHWAY_TABLE,
+protein_pathway = Table(
+    PROTEIN_PATHWAY_TABLE,
     Base.metadata,
-    Column('uniprot_id', Integer, ForeignKey('{}.id'.format(UNIPROT_TABLE_NAME))),
+    Column('uniprot_id', Integer, ForeignKey('{}.id'.format(PROTEIN_TABLE_NAME))),
     Column('pathway_id', Integer, ForeignKey('{}.id'.format(PATHWAY_TABLE_NAME)))
 )
 
-chebi_pathway = Table(
-    CHEBI_PATHWAY_TABLE,
+chemical_pathway = Table(
+    CHEMICAL_PATHWAY_TABLE,
     Base.metadata,
-    Column('chebi_id', Integer, ForeignKey('{}.id'.format(CHEBI_TABLE_NAME))),
+    Column('chebi_id', Integer, ForeignKey('{}.id'.format(CHEMICAL_TABLE_NAME))),
     Column('pathway_id', Integer, ForeignKey('{}.id'.format(PATHWAY_TABLE_NAME)))
 )
 
@@ -51,12 +51,11 @@ species_pathway = Table(
 
 class Pathway(Base):
     """Pathway Table"""
-
     __tablename__ = PATHWAY_TABLE_NAME
 
     id = Column(Integer, primary_key=True)
-    reactome_id = Column(String(255), unique=True, nullable=False)
 
+    reactome_id = Column(String(255), unique=True, nullable=False)
     name = Column(String(255))
 
     children = relationship(
@@ -74,13 +73,13 @@ class Pathway(Base):
 
     genes = relationship(
         'Protein',
-        secondary=uniprot_pathway,
+        secondary=protein_pathway,
         backref='pathways'
     )
 
     chemicals = relationship(
         'Chemical',
-        secondary=chebi_pathway,
+        secondary=chemical_pathway,
         backref='pathways'
     )
 
@@ -91,14 +90,16 @@ class Pathway(Base):
     def pathway_species(self):
         return self.species.name
 
-    def serialize_to_pathway_node(self):
+    def as_pybel_dict(self):
         """Function to serialize to PyBEL node data dictionary.
         :rtype: dict
         """
         return {
             FUNCTION: BIOPROCESS,
             NAMESPACE: 'REACTOME',
-            NAME: self.name
+            NAME: self.name,
+            IDENTIFIER: self.reactome_id
+
         }
 
 
@@ -123,22 +124,32 @@ class Species(Base):
 
 class Protein(Base):
     """Protein Table"""
-
-    __tablename__ = UNIPROT_TABLE_NAME
+    __tablename__ = PROTEIN_TABLE_NAME
 
     id = Column(Integer, primary_key=True)
+
     uniprot_id = Column(String, unique=True, nullable=False)
 
     def __repr__(self):
         return self.uniprot_id
 
+    def as_pybel_dict(self):
+        """Function to serialize to PyBEL node data dictionary.
+        :rtype: dict
+        """
+        return {
+            FUNCTION: BIOPROCESS,
+            NAMESPACE: 'UNIPROT',
+            IDENTIFIER: self.uniprot_id
+        }
+
 
 class Chemical(Base):
     """Chemical Table"""
-
-    __tablename__ = CHEBI_TABLE_NAME
+    __tablename__ = CHEMICAL_TABLE_NAME
 
     id = Column(Integer, primary_key=True)
+
     chebi_id = Column(String, unique=True, nullable=False)
 
     def __repr__(self):
