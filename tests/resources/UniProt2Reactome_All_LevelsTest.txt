@@ -1,3 +1,0 @@
-A0A0G2JXF7	R-RNO-389357	http://reactome.org/PathwayBrowser/#/R-RNO-389357	CD28 dependent PI3K/Akt signaling	IEA	Rattus norvegicus
-A0A0G2K0F2	R-RNO-389357	http://reactome.org/PathwayBrowser/#/R-RNO-389357	CD28 dependent PI3K/Akt signaling	IEA	Rattus norvegicus
-A0A0G2K344	R-RNO-389357	http://reactome.org/PathwayBrowser/#/R-RNO-389357	CD28 dependent PI3K/Akt signaling	IEA	Rattus norvegicus
