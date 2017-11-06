@@ -47,6 +47,20 @@ class TestParse(DatabaseMixin):
         self.assertIsNotNone(chemical)
         self.assertEqual(1, len(chemical.pathways))
 
+    def test_hierarchy(self):
+        granfather = self.manager.get_pathway_by_id('R-HSA-388841')
+        self.assertIsNotNone(granfather)
+        self.assertEqual('R-HSA-389356', granfather.children[0].reactome_id)
+
+        parent = self.manager.get_pathway_by_id('R-HSA-389356')
+        self.assertIsNotNone(parent)
+        self.assertEqual(
+            {'CD28 dependent PI3K/Akt signaling', 'CD28 dependent Vav1 pathway'},
+            {children.name
+             for children in parent.children
+             }
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
