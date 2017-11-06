@@ -41,6 +41,12 @@ class TestParse(DatabaseMixin):
         pathway = self.manager.get_pathway_by_id('R-HSA-389357')
         self.assertIsNotNone(pathway)
         self.assertEqual(4, len(pathway.chemicals))
+        self.assertEqual(
+            {'15422', '16761', '16618', '18348'}, {
+                chemical.chebi_id
+                for chemical in pathway.chemicals
+            }
+        )
 
     def test_drugs_to_pathways(self):
         chemical = self.manager.session.query(Chemical).filter(Chemical.chebi_id == '16761').one_or_none()
