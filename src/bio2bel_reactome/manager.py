@@ -6,13 +6,14 @@ This module populates the tables of bio2bel_reactome
 
 import configparser
 import logging
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from tqdm import tqdm
 
 from bio2bel_reactome.constants import *
 from bio2bel_reactome.models import Base, Chemical, Pathway, Protein, Species
 from bio2bel_reactome.parsers import *
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 log = logging.getLogger(__name__)
 
@@ -137,6 +138,14 @@ class Manager(object):
         log.info("populating pathway hierachy")
 
         for parent_id, child_id in tqdm(pathways_hierarchy, desc='Loading pathway hiearchy'):
+            if parent_id is None:
+                log.warning('parent id is None')
+                continue
+
+            if child_id is None:
+                log.warning('child id is None')
+                continue
+
             parent = self.get_pathway_by_id(parent_id)
             child = self.get_pathway_by_id(child_id)
 
@@ -157,6 +166,10 @@ class Manager(object):
         log.info("populating proteins")
 
         for uniprot_id, reactome_id, evidence in tqdm(uniprots, desc='Loading proteins'):
+            if uniprot_id is None:
+                log.warning('uniprot id is None')
+                continue
+
             if uniprot_id in pid_protein:
                 protein = pid_protein[uniprot_id]
             else:
@@ -166,7 +179,6 @@ class Manager(object):
 
             pathway = self.get_pathway_by_id(reactome_id)
             protein.pathways.append(pathway)
-
 
         self.session.commit()
 
@@ -182,6 +194,9 @@ class Manager(object):
         log.info("populating chemicals")
 
         for chebi_id, reactome_id, evidence in tqdm(chebis, desc='Loading chemicals'):
+            if chebi_id is None:
+                log.warning('chebi id is None')
+                continue
 
             if chebi_id in cid_chemical:
                 chemical = cid_chemical[chebi_id]
@@ -192,7 +207,6 @@ class Manager(object):
 
             pathway = self.get_pathway_by_id(reactome_id)
             chemical.pathways.append(pathway)
-
 
         self.session.commit()
 
