@@ -105,25 +105,16 @@ class Manager(object):
             self.session.add(new_species)
             species_name_to_model[species_name] = new_species
 
-        rid_pathway = {}
-
         log.info("populating pathways")
 
         for reactome_id, (name, species) in tqdm(pathways_dict.items(), desc='Loading pathways'):
+            pathway = Pathway(
+                reactome_id=reactome_id,
+                name=name,
+                species=species_name_to_model[species]
+            )
 
-            if reactome_id in rid_pathway:
-                pathway = rid_pathway[reactome_id]
-
-            else:
-                pathway = Pathway(
-                    reactome_id=reactome_id,
-                    name=name,
-                )
-
-                rid_pathway[reactome_id] = pathway
-                self.session.add(pathway)
-
-            pathway.species.append(species_name_to_model[species])
+            self.session.add(pathway)
 
         self.session.commit()
 

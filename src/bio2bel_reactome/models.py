@@ -41,13 +41,6 @@ chemical_pathway = Table(
     Column('pathway_id', Integer, ForeignKey('{}.id'.format(PATHWAY_TABLE_NAME)))
 )
 
-species_pathway = Table(
-    SPECIES_PATHWAY_TABLE,
-    Base.metadata,
-    Column('species_id', Integer, ForeignKey('{}.id'.format(SPECIES_TABLE_NAME))),
-    Column('pathway_id', Integer, ForeignKey('{}.id'.format(PATHWAY_TABLE_NAME)))
-)
-
 
 class Pathway(Base):
     """Pathway Table"""
@@ -67,11 +60,11 @@ class Pathway(Base):
 
     species = relationship(
         'Species',
-        secondary=species_pathway,
-        backref='pathways'
     )
 
-    genes = relationship(
+    species_id = Column(Integer, ForeignKey('{}.id'.format(SPECIES_TABLE_NAME)))
+
+    proteins = relationship(
         'Protein',
         secondary=protein_pathway,
         backref='pathways'
@@ -115,6 +108,7 @@ class Protein(Base):
     __tablename__ = PROTEIN_TABLE_NAME
 
     id = Column(Integer, primary_key=True)
+    species_id = Column(Integer, ForeignKey('{}.id'.format(SPECIES_TABLE_NAME)))
 
     uniprot_id = Column(String, unique=True, nullable=False)
 
