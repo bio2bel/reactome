@@ -96,7 +96,7 @@ class Manager(object):
 
         log.info("populating species")
 
-        for species_name in tqdm(species_set, desc='Species'):
+        for species_name in tqdm(species_set, desc='Loading species'):
             new_species = Species(
                 name=species_name,
             )
@@ -108,7 +108,7 @@ class Manager(object):
 
         log.info("populating pathways")
 
-        for reactome_id, (name, species) in tqdm(pathways_dict.items(), desc='Pathways'):
+        for reactome_id, (name, species) in tqdm(pathways_dict.items(), desc='Loading pathways'):
 
             if reactome_id in rid_pathway:
                 pathway = rid_pathway[reactome_id]
@@ -136,7 +136,7 @@ class Manager(object):
 
         log.info("populating pathway hierachy")
 
-        for parent_id, child_id in tqdm(pathways_hierarchy, desc='Pathway hiearchy'):
+        for parent_id, child_id in tqdm(pathways_hierarchy, desc='Loading pathway hiearchy'):
             parent = self.get_pathway_by_id(parent_id)
             child = self.get_pathway_by_id(child_id)
 
@@ -156,7 +156,7 @@ class Manager(object):
 
         log.info("populating proteins")
 
-        for uniprot_id, reactome_id, evidence in tqdm(uniprots, desc='Proteins'):
+        for uniprot_id, reactome_id, evidence in tqdm(uniprots, desc='Loading proteins'):
             if uniprot_id in pid_protein:
                 protein = pid_protein[uniprot_id]
             else:
@@ -181,7 +181,7 @@ class Manager(object):
 
         log.info("populating chemicals")
 
-        for chebi_id, reactome_id, evidence in tqdm(chebis, desc='Chemicals'):
+        for chebi_id, reactome_id, evidence in tqdm(chebis, desc='Loading chemicals'):
 
             if chebi_id in cid_chemical:
                 chemical = cid_chemical[chebi_id]
