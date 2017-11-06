@@ -10,7 +10,8 @@ BIO2BEL_MODULE = 'reactome'
 PACKAGES = setuptools.find_packages(where='src')
 META_PATH = os.path.join('src', 'bio2bel_{}'.format(BIO2BEL_MODULE), '__init__.py')
 INSTALL_REQUIRES = [
-    'pybel_tools',
+    'pybel',
+    'sqlalchemy',
     'pandas',
 ]
 ENTRY_POINTS = {
