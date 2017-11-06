@@ -84,13 +84,13 @@ class Manager(object):
         """
         return self.session.query(Pathway).filter(Pathway.reactome_id == reactome_id).one_or_none()
 
-    def _populate_pathways(self, source=None):
+    def _populate_pathways(self, url=None):
         """ Populate pathway table
 
-        :param source: path or link to data source needed for get_data()
+        :param url: path or link to data source needed for get_data()
         """
 
-        df = get_pathway_names_df(url=source)
+        df = get_pathway_names_df(url=url)
         pathways_dict, species_set = parse_pathway_names(df)
 
         species_name_to_model = {}
@@ -127,12 +127,12 @@ class Manager(object):
 
         self.session.commit()
 
-    def _pathway_hierarchy(self, source=None):
+    def _pathway_hierarchy(self, url=None):
         """ Links pathway models through hierarchy
 
-        :param source: path or link to data source needed for get_data()
+        :param url: path or link to data source needed for get_data()
         """
-        df = get_pathway_hierarchy_df(url=source)
+        df = get_pathway_hierarchy_df(url=url)
         pathways_hierarchy = parse_pathway_hierarchy(df)
 
         log.info("populating pathway hierarchy")
@@ -153,12 +153,12 @@ class Manager(object):
 
         self.session.commit()
 
-    def _pathway_protein(self, uniprot_url=None):
+    def _pathway_protein(self, url=None):
         """ Populates UniProt Tables"""
 
         log.info("downloading proteins")
 
-        uniprot_df = get_proteins_pathways_df(url=uniprot_url)
+        uniprot_df = get_proteins_pathways_df(url=url)
         uniprots = parse_entities_pathways(uniprot_df)
 
         pid_protein = {}
@@ -182,13 +182,13 @@ class Manager(object):
 
         self.session.commit()
 
-    def _pathway_chemical(self, chebi_url=None):
+    def _pathway_chemical(self, url=None):
         """ Populates Chebi Tables"""
 
         log.info("downloading chemicals")
 
         cid_chemical = {}
-        chebi_df = get_chemicals_pathways_df(url=chebi_url)
+        chebi_df = get_chemicals_pathways_df(url=url)
         chebis = parse_entities_pathways(chebi_df)
 
         log.info("populating chemicals")
@@ -210,9 +210,10 @@ class Manager(object):
 
         self.session.commit()
 
-    def populate(self):
+    def populate(self, pathways_path=None, pathways_hierarchy_path=None, pathways_proteins_path=None,
+                 pathways_chemicals_path=None):
         """ Populates all tables"""
-        self._populate_pathways()
-        self._pathway_hierarchy()
-        self._pathway_protein()
-        self._pathway_chemical()
+        self._populate_pathways(url=pathways_path)
+        self._pathway_hierarchy(url=pathways_hierarchy_path)
+        self._pathway_protein(url=pathways_proteins_path)
+        self._pathway_chemical(url=pathways_chemicals_path)
