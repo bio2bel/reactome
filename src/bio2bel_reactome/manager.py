@@ -178,6 +178,11 @@ class Manager(object):
                 self.session.add(protein)
 
             pathway = self.get_pathway_by_id(reactome_id)
+
+            if pathway is None:
+                log.warning('Missing reactome_id: %s', reactome_id)
+                continue
+
             protein.pathways.append(pathway)
 
         self.session.commit()
@@ -206,6 +211,11 @@ class Manager(object):
                 self.session.add(chemical)
 
             pathway = self.get_pathway_by_id(reactome_id)
+
+            if pathway is None:
+                log.warning('Missing reactome_id: %s', reactome_id)
+                continue
+
             chemical.pathways.append(pathway)
 
         self.session.commit()
