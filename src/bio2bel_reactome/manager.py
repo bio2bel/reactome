@@ -7,15 +7,11 @@ This module populates the tables of bio2bel_reactome
 import configparser
 import logging
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
 from bio2bel_reactome.constants import *
 from bio2bel_reactome.models import Base, Chemical, Pathway, Protein, Species
-from bio2bel_reactome.parsers.entity_pathways import parser_entity_pathways
-from bio2bel_reactome.parsers.pathway_hierarchy import parser_pathway_hierarchy
-from bio2bel_reactome.parsers.pathway_names import parser_pathway_names
-from bio2bel_reactome.run import get_data
+from bio2bel_reactome.parsers import *
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 log = logging.getLogger(__name__)
 
@@ -26,8 +22,7 @@ class Manager(object):
         self.engine = create_engine(self.connection)
         self.session_maker = sessionmaker(bind=self.engine, autoflush=False, expire_on_commit=False)
         self.session = self.session_maker()
-        self.drop_tables()  # TODO: delete
-        self.make_tables()  # TODO: delete
+        self.make_tables()
 
     @staticmethod
     def get_connection(connection=None):
@@ -92,13 +87,8 @@ class Manager(object):
 
         :param source: path or link to data source needed for get_data()
         """
-
-        if source is None:
-            source = PATHWAY_NAMES_URL
-
-        df = get_data(source)
-
-        pathways_dict, species_set = parser_pathway_names(df)
+        df = get_pathway_names_df(url=source)
+        pathways_dict, species_set = parse_pathway_names(df)
 
         species_name_to_model = {}
 
@@ -126,13 +116,8 @@ class Manager(object):
 
         :param source: path or link to data source needed for get_data()
         """
-
-        if source is None:
-            source = PATHWAYS_HIERARCHY_URL
-
-        df = get_data(source)
-
-        pathways_hierarchy = parser_pathway_hierarchy(df)
+        df = get_pathway_hierarchy_df(url=source)
+        pathways_hierarchy = parse_pathway_hierarchy(df)
 
         for parent_id, child_id in pathways_hierarchy:
             parent = self.get_pathway_by_id(parent_id)
@@ -144,40 +129,37 @@ class Manager(object):
 
     def _pathway_entity(self, chebi_url=None, uniprot_url=None):
         """ Populates UniProt and Chebi Tables"""
+        uniprot_df = get_proteins_pathways_df(url=uniprot_url)
+        uniprots = parse_entities_pathways(uniprot_df)
 
-        if uniprot_url is None:
-            uniprot_url = UNIPROT_PATHWAYS_URL
-
-        uniprot_df = get_data(uniprot_url)
-
-        uniprots = parser_entity_pathways(uniprot_df)
+        pid_protein = {}
+        cid_chemical = {}
 
         for uniprot_id, reactome_id, evidence in uniprots:
+            if uniprot_id in pid_protein:
+                protein = pid_protein[uniprot_id]
+            else:
+                protein = Protein(uniprot_id=uniprot_id)
+                pid_protein[uniprot_id] = protein
+                self.session.add(protein)
+
             pathway = self.get_pathway_by_id(reactome_id)
+            protein.pathways.append(pathway)
 
-            protein = Protein(
-                uniprot_id=uniprot_id,
-                pathways=pathway
-            )
-
-            self.session.add(protein)
-
-        if chebi_url is None:
-            chebi_url = CHEBI_PATHWAYS_URL
-
-        chebi_df = get_data(chebi_url)
-
-        chebis = parser_entity_pathways(chebi_df)
+        chebi_df = get_chemicals_pathways_df(url=chebi_url)
+        chebis = parse_entities_pathways(chebi_df)
 
         for chebi_id, reactome_id, evidence in chebis:
+
+            if chebi_id in cid_chemical:
+                chemical = cid_chemical[chebi_id]
+            else:
+                chemical = Chemical(chebi_id=chebi_id)
+                cid_chemical[chebi_id] = chemical
+                self.session.add(chemical)
+
             pathway = self.get_pathway_by_id(reactome_id)
-
-            chemical = Chemical(
-                chebi_id=chebi_id,
-                pathways=pathway
-            )
-
-            self.session.add(chemical)
+            chemical.pathways.append(pathway)
 
     def populate(self):
         """ Populates all tables"""

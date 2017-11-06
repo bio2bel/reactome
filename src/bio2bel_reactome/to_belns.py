@@ -4,49 +4,38 @@ from __future__ import print_function
 
 import logging
 
-import pandas as pd
-
 from bio2bel_reactome.constants import PATHWAY_NAMES_URL
+from bio2bel_reactome.parsers.pathway_names import get_pathway_names_df
 from pybel.constants import NAMESPACE_DOMAIN_BIOPROCESS
 from pybel.resources.arty import get_today_arty_namespace
 from pybel.resources.definitions import write_namespace
 from pybel.resources.deploy import deploy_namespace
+
 
 log = logging.getLogger(__name__)
 
 MODULE_NAME = 'reactome'
 
 
-def get_data(url):
-    """ Converts tab separated txt files to pandas Dataframe
-
-    :param url: url from reactome tab separated file
-    :return: dataframe of the file
-    :rtype: pandas.DataFrame
-    """
-    df = pd.read_csv(url, sep='\t', header=None)
-    return df
-
-
-def get_values(df=None):
+def get_values(url=None):
     """Gets the unique names from Reactome pathway names table. Combines all species.
 
+    :param Optional[str] url: A non-default URL for the Reactome pathway names table
     :rtype: set[str]
     """
-    if df is None:
-        df = get_data(PATHWAY_NAMES_URL)
+    df = get_pathway_names_df(url=url)
 
     values = set(df[1])
 
     return values
 
 
-def write_belns(file=None):
+def write_belns(file=None, url=None):
     """Prints the Reactome Pathway names BEL namespace
 
     :param file file: A writable file or file-like. Defaults to standard out
     """
-    values = get_values()
+    values = get_values(url=url)
 
     write_namespace(
         namespace_name="Reactome Pathway Names",

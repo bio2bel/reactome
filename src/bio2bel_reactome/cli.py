@@ -7,7 +7,7 @@ import logging
 import click
 
 from bio2bel_reactome.manager import Manager
-from bio2bel_reactome.run import deploy_to_arty
+from bio2bel_reactome.to_belns import deploy_to_arty
 
 log = logging.getLogger('pyreactome')
 
