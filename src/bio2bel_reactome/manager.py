@@ -136,7 +136,7 @@ class Manager(object):
 
         log.info("populating pathway hierachy")
 
-        for parent_id, child_id in tqdm(pathways_hierarchy):
+        for parent_id, child_id in tqdm(pathways_hierarchy, desc='Pathway hiearchy'):
             parent = self.get_pathway_by_id(parent_id)
             child = self.get_pathway_by_id(child_id)
 

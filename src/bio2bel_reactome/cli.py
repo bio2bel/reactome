@@ -9,11 +9,12 @@ import click
 from bio2bel_reactome.manager import Manager
 from bio2bel_reactome.to_belns import deploy_to_arty
 
-log = logging.getLogger('pyreactome')
+log = logging.getLogger(__name__)
 
 
 def set_debug(level):
     logging.basicConfig(level=level, format="%(asctime)s - %(levelname)s - %(message)s")
+    log.setLevel(level=level)
 
 
 def set_debug_param(debug):
