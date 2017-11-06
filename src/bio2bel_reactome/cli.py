@@ -42,6 +42,18 @@ def build(debug):
 
 
 @main.command()
+@click.option('-v', '--debug', count=True, help="Turn on debugging.")
+def drop(debug):
+    """Drop the Reactome database."""
+
+    set_debug_param(debug)
+
+    m = Manager()
+    click.echo("drop db")
+    m.drop_tables()
+
+
+@main.command()
 @click.option('--force', is_flag=True, help="Force knowledge to be uploaded even if not new namespace")
 def deploy(force):
     """Deploy to Artifactory"""

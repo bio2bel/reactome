@@ -13,6 +13,7 @@ INSTALL_REQUIRES = [
     'pybel',
     'sqlalchemy',
     'pandas',
+    'tqdm',
 ]
 ENTRY_POINTS = {
     'bio2bel': [

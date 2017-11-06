@@ -6,6 +6,7 @@ This module populates the tables of bio2bel_reactome
 
 import configparser
 import logging
+from tqdm import tqdm
 
 from bio2bel_reactome.constants import *
 from bio2bel_reactome.models import Base, Chemical, Pathway, Protein, Species
@@ -87,12 +88,15 @@ class Manager(object):
 
         :param source: path or link to data source needed for get_data()
         """
+
         df = get_pathway_names_df(url=source)
         pathways_dict, species_set = parse_pathway_names(df)
 
         species_name_to_model = {}
 
-        for species_name in species_set:
+        log.info("populating species")
+
+        for species_name in tqdm(species_set, desc='Species'):
             new_species = Species(
                 name=species_name,
             )
@@ -100,14 +104,25 @@ class Manager(object):
             self.session.add(new_species)
             species_name_to_model[species_name] = new_species
 
-        for id, (name, species) in pathways_dict.items():
-            new_pathway = Pathway(
-                reactome_id=id,
-                name=name,
-                species=[species_name_to_model[species]]
-            )
+        rid_pathway = {}
 
-            self.session.add(new_pathway)
+        log.info("populating pathways")
+
+        for reactome_id, (name, species) in tqdm(pathways_dict.items(), desc='Pathways'):
+
+            if reactome_id in rid_pathway:
+                pathway = rid_pathway[reactome_id]
+
+            else:
+                pathway = Pathway(
+                    reactome_id=reactome_id,
+                    name=name,
+                )
+
+                rid_pathway[reactome_id] = pathway
+                self.session.add(pathway)
+
+            pathway.species.append(species_name_to_model[species])
 
         self.session.commit()
 
@@ -119,7 +134,9 @@ class Manager(object):
         df = get_pathway_hierarchy_df(url=source)
         pathways_hierarchy = parse_pathway_hierarchy(df)
 
-        for parent_id, child_id in pathways_hierarchy:
+        log.info("populating pathway hierachy")
+
+        for parent_id, child_id in tqdm(pathways_hierarchy):
             parent = self.get_pathway_by_id(parent_id)
             child = self.get_pathway_by_id(child_id)
 
@@ -127,15 +144,19 @@ class Manager(object):
 
         self.session.commit()
 
-    def _pathway_entity(self, chebi_url=None, uniprot_url=None):
-        """ Populates UniProt and Chebi Tables"""
+    def _pathway_protein(self, uniprot_url=None):
+        """ Populates UniProt Tables"""
+
+        log.info("downloading proteins")
+
         uniprot_df = get_proteins_pathways_df(url=uniprot_url)
         uniprots = parse_entities_pathways(uniprot_df)
 
         pid_protein = {}
-        cid_chemical = {}
 
-        for uniprot_id, reactome_id, evidence in uniprots:
+        log.info("populating proteins")
+
+        for uniprot_id, reactome_id, evidence in tqdm(uniprots, desc='Proteins'):
             if uniprot_id in pid_protein:
                 protein = pid_protein[uniprot_id]
             else:
@@ -146,10 +167,21 @@ class Manager(object):
             pathway = self.get_pathway_by_id(reactome_id)
             protein.pathways.append(pathway)
 
+
+        self.session.commit()
+
+    def _pathway_chemical(self, chebi_url=None):
+        """ Populates Chebi Tables"""
+
+        log.info("downloading chemicals")
+
+        cid_chemical = {}
         chebi_df = get_chemicals_pathways_df(url=chebi_url)
         chebis = parse_entities_pathways(chebi_df)
 
-        for chebi_id, reactome_id, evidence in chebis:
+        log.info("populating chemicals")
+
+        for chebi_id, reactome_id, evidence in tqdm(chebis, desc='Chemicals'):
 
             if chebi_id in cid_chemical:
                 chemical = cid_chemical[chebi_id]
@@ -161,7 +193,12 @@ class Manager(object):
             pathway = self.get_pathway_by_id(reactome_id)
             chemical.pathways.append(pathway)
 
+
+        self.session.commit()
+
     def populate(self):
         """ Populates all tables"""
         self._populate_pathways()
         self._pathway_hierarchy()
+        self._pathway_protein()
+        self._pathway_chemical()
