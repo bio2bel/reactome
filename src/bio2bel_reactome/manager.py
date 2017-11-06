@@ -135,9 +135,9 @@ class Manager(object):
         df = get_pathway_hierarchy_df(url=source)
         pathways_hierarchy = parse_pathway_hierarchy(df)
 
-        log.info("populating pathway hierachy")
+        log.info("populating pathway hierarchy")
 
-        for parent_id, child_id in tqdm(pathways_hierarchy, desc='Loading pathway hiearchy'):
+        for parent_id, child_id in tqdm(pathways_hierarchy, desc='Loading pathway hierarchy'):
             if parent_id is None:
                 log.warning('parent id is None')
                 continue
