@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from bio2bel_reactome import cli
-from bio2bel_reactome.to_belns import *
-
 __version__ = '0.0.1-dev'
 
 __title__ = 'bio2bel_reactome'
