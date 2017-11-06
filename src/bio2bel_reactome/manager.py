@@ -161,9 +161,9 @@ class Manager(object):
         uniprot_df = get_proteins_pathways_df(url=url)
         uniprots = parse_entities_pathways(uniprot_df)
 
-        pid_protein = {}
-
         log.info("populating proteins")
+        pid_protein = {}
+        missing_reactome_ids = set()
 
         for uniprot_id, reactome_id, evidence in tqdm(uniprots, desc='Loading proteins'):
             if uniprot_id is None:
@@ -180,10 +180,14 @@ class Manager(object):
             pathway = self.get_pathway_by_id(reactome_id)
 
             if pathway is None:
-                log.warning('Missing reactome_id: %s', reactome_id)
+                log.debug('Missing reactome_id: %s', reactome_id)
+                missing_reactome_ids.add(reactome_id)
                 continue
 
             protein.pathways.append(pathway)
+
+        if missing_reactome_ids:
+            log.warning('missing %d reactome ids', len(missing_reactome_ids))
 
         self.session.commit()
 
@@ -192,11 +196,12 @@ class Manager(object):
 
         log.info("downloading chemicals")
 
-        cid_chemical = {}
         chebi_df = get_chemicals_pathways_df(url=url)
         chebis = parse_entities_pathways(chebi_df)
 
         log.info("populating chemicals")
+        cid_chemical = {}
+        missing_reactome_ids = set()
 
         for chebi_id, reactome_id, evidence in tqdm(chebis, desc='Loading chemicals'):
             if chebi_id is None:
@@ -213,10 +218,14 @@ class Manager(object):
             pathway = self.get_pathway_by_id(reactome_id)
 
             if pathway is None:
-                log.warning('Missing reactome_id: %s', reactome_id)
+                log.debug('Missing reactome_id: %s', reactome_id)
+                missing_reactome_ids.add(reactome_id)
                 continue
 
             chemical.pathways.append(pathway)
+
+        if missing_reactome_ids:
+            log.warning('missing %d reactome ids', len(missing_reactome_ids))
 
         self.session.commit()
 
