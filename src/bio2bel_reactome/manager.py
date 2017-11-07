@@ -7,13 +7,12 @@ This module populates the tables of bio2bel_reactome
 import configparser
 import logging
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from tqdm import tqdm
-
 from bio2bel_reactome.constants import *
 from bio2bel_reactome.models import Base, Chemical, Pathway, Protein, Species
 from bio2bel_reactome.parsers import *
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from tqdm import tqdm
 
 log = logging.getLogger(__name__)
 
@@ -79,7 +78,7 @@ class Manager(object):
     def get_pathway_by_id(self, reactome_id):
         """Gets a pathway by its reactome id
 
-        :param reactome_id:
+        :param reactome_id: reactome identifier
         :rtype: Optional[Pathway]
         """
         return self.session.query(Pathway).filter(Pathway.reactome_id == reactome_id).one_or_none()
@@ -87,7 +86,7 @@ class Manager(object):
     def _populate_pathways(self, url=None):
         """ Populate pathway table
 
-        :param url: path or link to data source needed for get_data()
+        :param url: Optional[str] url: url from pathway table file
         """
 
         df = get_pathway_names_df(url=url)
@@ -121,7 +120,7 @@ class Manager(object):
     def _pathway_hierarchy(self, url=None):
         """ Links pathway models through hierarchy
 
-        :param url: path or link to data source needed for get_data()
+        :param Optional[str] url: url from pathway hierarchy file
         """
         df = get_pathway_hierarchy_df(url=url)
         pathways_hierarchy = parse_pathway_hierarchy(df)
@@ -145,7 +144,10 @@ class Manager(object):
         self.session.commit()
 
     def _pathway_protein(self, url=None):
-        """ Populates UniProt Tables"""
+        """ Populates UniProt Tables
+        :param url: Optional[str] url: url from pathway protein file
+
+        """
 
         log.info("downloading proteins")
 
@@ -183,7 +185,10 @@ class Manager(object):
         self.session.commit()
 
     def _pathway_chemical(self, url=None):
-        """ Populates Chebi Tables"""
+        """ Populates Chebi Tables
+
+        :param url: Optional[str] url: url from pathway chemical file
+        """
 
         log.info("downloading chemicals")
 
@@ -222,7 +227,13 @@ class Manager(object):
 
     def populate(self, pathways_path=None, pathways_hierarchy_path=None, pathways_proteins_path=None,
                  pathways_chemicals_path=None):
-        """ Populates all tables"""
+        """ Populates all tables
+
+        :param pathways_path: Optional[str] url: url from pathway table file
+        :param pathways_hierarchy_path: Optional[str] url: url from pathway hierarchy file
+        :param pathways_proteins_path: Optional[str] url: url from pathway protein file
+        :param pathways_chemicals_path: Optional[str] url: url from pathway chemical file
+        """
         self._populate_pathways(url=pathways_path)
         self._pathway_hierarchy(url=pathways_hierarchy_path)
         self._pathway_protein(url=pathways_proteins_path)
