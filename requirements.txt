@@ -2,3 +2,5 @@ pybel
 sqlalchemy
 pandas
 tqdm
+flask
+flask_admin
