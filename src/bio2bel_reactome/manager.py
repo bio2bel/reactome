@@ -46,18 +46,18 @@ class Manager(object):
             return connection
 
         with open(cfp, 'w') as config_file:
-            config['database'] = {'sqlalchemy_connection_string': REACTOME_SQLITE_PATH}
+            config['database'] = {'sqlalchemy_connection_string': DEFAULT_CACHE_CONNECTION}
             config.write(config_file)
             log.info('create configuration file {}'.format(cfp))
 
-        return REACTOME_SQLITE_PATH
+        return DEFAULT_CACHE_CONNECTION
 
     def make_tables(self, check_first=True):
         """Create tables"""
         log.info('create table in {}'.format(self.engine.url))
         Base.metadata.create_all(self.engine, checkfirst=check_first)
 
-    def drop_tables(self):
+    def drop_all(self):
         """drops all tables in the database"""
         log.info('drop tables in {}'.format(self.engine.url))
         Base.metadata.drop_all(self.engine)

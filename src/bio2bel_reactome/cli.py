@@ -6,6 +6,7 @@ import logging
 
 import click
 
+from bio2bel_reactome.constants import DEFAULT_CACHE_CONNECTION
 from bio2bel_reactome.manager import Manager
 from bio2bel_reactome.to_belns import deploy_to_arty
 
@@ -31,27 +32,19 @@ def main():
 
 
 @main.command()
-@click.option('-v', '--debug', count=True, help="Turn on debugging.")
-def build(debug):
+@click.option('-c', '--connection', help='Defaults to {}'.format(DEFAULT_CACHE_CONNECTION))
+def populate(connection):
     """Build the local version of the full Reactome."""
-
-    set_debug_param(debug)
-
-    m = Manager()
-    click.echo("populate tables")
+    m = Manager(connection=connection)
     m.populate()
 
 
 @main.command()
-@click.option('-v', '--debug', count=True, help="Turn on debugging.")
-def drop(debug):
+@click.option('-c', '--connection', help='Defaults to {}'.format(DEFAULT_CACHE_CONNECTION))
+def drop(connection):
     """Drop the Reactome database."""
-
-    set_debug_param(debug)
-
-    m = Manager()
-    click.echo("drop db")
-    m.drop_tables()
+    m = Manager(connection=connection)
+    m.drop_all()
 
 
 @main.command()

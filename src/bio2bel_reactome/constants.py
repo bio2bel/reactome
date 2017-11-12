@@ -4,15 +4,15 @@
 
 import os
 
-REACTOME_DATA_DIR = os.path.join(os.path.expanduser('~'), '.reactome')
+DATA_DIR = os.path.join(os.path.expanduser('~'), '.reactome')
 
-if not os.path.exists(REACTOME_DATA_DIR):
-    os.makedirs(REACTOME_DATA_DIR)
+if not os.path.exists(DATA_DIR):
+    os.makedirs(DATA_DIR)
 
 REACTOME_DATABASE_NAME = 'reactome.db'
-REACTOME_SQLITE_PATH = 'sqlite:///' + os.path.join(REACTOME_DATA_DIR, REACTOME_DATABASE_NAME)
+DEFAULT_CACHE_CONNECTION = 'sqlite:///' + os.path.join(DATA_DIR, REACTOME_DATABASE_NAME)
 
-REACTOME_CONFIG_FILE_PATH = os.path.join(REACTOME_DATA_DIR, 'config.ini')
+REACTOME_CONFIG_FILE_PATH = os.path.join(DATA_DIR, 'config.ini')
 
 
 PATHWAY_NAMES_URL = 'http://reactome.org/download/current/ReactomePathways.txt'
