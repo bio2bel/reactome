@@ -15,6 +15,7 @@ INSTALL_REQUIRES = [
     'sqlalchemy',
     'pandas',
     'tqdm',
+    'bio2bel',
 ]
 ENTRY_POINTS = {
     'bio2bel': [

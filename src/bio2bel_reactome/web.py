@@ -10,8 +10,8 @@ from bio2bel_reactome.manager import Manager
 from bio2bel_reactome.models import *
 
 
-def add_admin(app, session, url=None):
-    admin = flask_admin.Admin(app, url=(url or '/'))
+def add_admin(app, session, **kwargs):
+    admin = flask_admin.Admin(app, **kwargs)
     admin.add_view(ModelView(Pathway, session))
     admin.add_view(ModelView(Protein, session))
     admin.add_view(ModelView(Chemical, session))

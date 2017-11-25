@@ -5,3 +5,4 @@ pandas
 tqdm
 flask
 flask_admin
+bio2bel

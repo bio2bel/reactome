@@ -4,53 +4,27 @@
 This module populates the tables of bio2bel_reactome
 """
 
-import configparser
 import logging
 
-from bio2bel_reactome.constants import *
-from bio2bel_reactome.models import Base, Chemical, Pathway, Protein, Species
-from bio2bel_reactome.parsers import *
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from tqdm import tqdm
+
+from bio2bel.utils import get_connection
+from bio2bel_reactome.constants import MODULE_NAME
+from bio2bel_reactome.models import Base, Chemical, Pathway, Protein, Species
+from bio2bel_reactome.parsers import *
 
 log = logging.getLogger(__name__)
 
 
 class Manager(object):
     def __init__(self, connection=None):
-        self.connection = self.get_connection(connection)
+        self.connection = get_connection(MODULE_NAME, connection)
         self.engine = create_engine(self.connection)
         self.session_maker = sessionmaker(bind=self.engine, autoflush=False, expire_on_commit=False)
         self.session = self.session_maker()
         self.make_tables()
-
-    @staticmethod
-    def get_connection(connection=None):
-        """Return the SQLAlchemy connection string if it is set
-        :param connection: get the SQLAlchemy connection string
-        :rtype: str
-        """
-        if connection:
-            return connection
-
-        config = configparser.ConfigParser()
-
-        cfp = REACTOME_CONFIG_FILE_PATH
-
-        if os.path.exists(cfp):
-            log.info('fetch database configuration from {}'.format(cfp))
-            config.read(cfp)
-            connection = config['database']['sqlalchemy_connection_string']
-            log.info('load connection string from {}: {}'.format(cfp, connection))
-            return connection
-
-        with open(cfp, 'w') as config_file:
-            config['database'] = {'sqlalchemy_connection_string': DEFAULT_CACHE_CONNECTION}
-            config.write(config_file)
-            log.info('create configuration file {}'.format(cfp))
-
-        return DEFAULT_CACHE_CONNECTION
 
     def make_tables(self, check_first=True):
         """Create tables"""

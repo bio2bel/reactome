@@ -2,18 +2,11 @@
 
 """This module contains all the constants used in bio2bel Reactome project"""
 
-import os
+from bio2bel.utils import get_connection, get_data_dir
 
-DATA_DIR = os.path.join(os.path.expanduser('~'), '.reactome')
-
-if not os.path.exists(DATA_DIR):
-    os.makedirs(DATA_DIR)
-
-REACTOME_DATABASE_NAME = 'reactome.db'
-DEFAULT_CACHE_CONNECTION = 'sqlite:///' + os.path.join(DATA_DIR, REACTOME_DATABASE_NAME)
-
-REACTOME_CONFIG_FILE_PATH = os.path.join(DATA_DIR, 'config.ini')
-
+MODULE_NAME = 'reactome'
+DATA_DIR = get_data_dir(MODULE_NAME)
+DEFAULT_CACHE_CONNECTION = get_connection(MODULE_NAME)
 
 PATHWAY_NAMES_URL = 'http://reactome.org/download/current/ReactomePathways.txt'
 PATHWAYS_HIERARCHY_URL = 'http://reactome.org/download/current/ReactomePathwaysRelation.txt'
