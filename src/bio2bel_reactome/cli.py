@@ -55,9 +55,11 @@ def deploy(force):
 
 
 @main.command()
-def web():
+@click.option('-c', '--connection', help="Defaults to {}".format(DEFAULT_CACHE_CONNECTION))
+def web(connection):
     """Run web"""
-    from bio2bel_reactome.web import app
+    from bio2bel_reactome.web import create_app
+    app = create_app(connection=connection)
     app.run(debug=True, host='0.0.0.0', port=5000)
 
 
