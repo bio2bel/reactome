@@ -22,7 +22,7 @@ class TestParse(DatabaseMixin):
     def test_uniprot_rgd_mapping(self):
         """ Maps uniprot id http://www.uniprot.org/uniprot/A0A0G2K0F2 to Rat Cd80"""
 
-        cd80_uniprot = self.manager.session.query(Protein).filter(Protein.uniprot_id == 'A0A0G2K0F2').one_or_none()
+        cd80_uniprot = self.manager.get_protein_by_uniprot_id('A0A0G2K0F2')
 
         cd80_hgnc = map_hgnc_node(manager=bio2bel_hgnc_manager, identifier=cd80_uniprot)
 
@@ -36,6 +36,6 @@ class TestParse(DatabaseMixin):
         should_be_none = self.manager.get_pathways_by_species('invalid species')
 
         self.assertEqual(4, len(human_pathways))
-        self.assertEqual(4, len(human_pathways))
+        self.assertEqual(1, len(xenopus_pathways))
         self.assertEqual(None, should_be_none)
 
