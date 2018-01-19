@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """ This module contains all test constants"""
 
 import os
@@ -10,10 +11,10 @@ from bio2bel_reactome.manager import Manager
 dir_path = os.path.dirname(os.path.realpath(__file__))
 resources_path = os.path.join(dir_path, 'resources')
 
-chemicals_to_reactome = os.path.join(resources_path, 'ChEBI2Reactome_All_Levels.txt')
 pathways = os.path.join(resources_path, 'ReactomePathways.txt')
 pathway_hierarchy = os.path.join(resources_path, 'ReactomePathwaysRelation.txt')
 proteins_to_reactome = os.path.join(resources_path, 'UniProt2Reactome_All_Levels.txt')
+chemicals_to_reactome = os.path.join(resources_path, 'ChEBI2Reactome_All_Levels.txt')
 
 
 class DatabaseMixin(unittest.TestCase):
@@ -25,8 +26,7 @@ class DatabaseMixin(unittest.TestCase):
         cls.connection = 'sqlite:///' + cls.path
 
         # create temporary database
-        cls.manager = Manager(cls.connection)
-        cls.manager.create_all()
+        cls.manager = Manager(connection=cls.connection)
         # fill temporary database with test data
         cls.manager.populate(
             pathways_path=pathways,
