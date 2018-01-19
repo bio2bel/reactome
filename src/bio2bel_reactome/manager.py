@@ -26,7 +26,7 @@ class Manager(object):
         self.session = self.session_maker()
         self.make_tables()
 
-    def make_tables(self, check_first=True):
+    def create_all(self, check_first=True):
         """Create tables"""
         log.info('create table in {}'.format(self.engine.url))
         Base.metadata.create_all(self.engine, checkfirst=check_first)

@@ -32,19 +32,33 @@ def main():
 
 
 @main.command()
-@click.option('-c', '--connection', help='Defaults to {}'.format(DEFAULT_CACHE_CONNECTION))
-def populate(connection):
+@click.option('-v', '--debug', count=True, help="Turn on debugging.")
+@click.option('-c', '--connection', help="Defaults to {}".format(DEFAULT_CACHE_CONNECTION))
+@click.option('-d', '--delete_first', is_flag=True)
+def populate(debug, connection, delete_first):
     """Build the local version of the full Reactome."""
     m = Manager(connection=connection)
+
+    if delete_first or click.confirm('Drop first the database?'):
+        m.drop_all()
+        m.create_all()
+
     m.populate()
 
 
 @main.command()
+@click.option('-v', '--debug', count=True, help="Turn on debugging.")
+@click.option('-y', '--yes', is_flag=True)
 @click.option('-c', '--connection', help='Defaults to {}'.format(DEFAULT_CACHE_CONNECTION))
-def drop(connection):
+def drop(debug, yes, connection):
     """Drop the Reactome database."""
-    m = Manager(connection=connection)
-    m.drop_all()
+
+    set_debug_param(debug)
+
+    if yes or click.confirm('Do you really want to delete the database?'):
+        m = Manager(connection=connection)
+        click.echo("drop db")
+        m.drop_all()
 
 
 @main.command()
@@ -60,7 +74,7 @@ def web(connection):
     """Run web"""
     from bio2bel_reactome.web import create_app
     app = create_app(connection=connection)
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000)
 
 
 if __name__ == '__main__':
