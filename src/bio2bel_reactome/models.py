@@ -2,11 +2,12 @@
 
 """Reactome database model"""
 
+from pybel.dsl import bioprocess, protein, abundance
 from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-from pybel.constants import BIOPROCESS, FUNCTION, IDENTIFIER, NAME, NAMESPACE
+from bio2bel_reactome.constants import HGNC, REACTOME, CHEBI
 
 Base = declarative_base()
 
@@ -81,14 +82,16 @@ class Pathway(Base):
 
     def as_pybel_dict(self):
         """Function to serialize to PyBEL node data dictionary.
-        :rtype: dict
+        :rtype: pybel.dsl.bioprocess
         """
-        return {
-            FUNCTION: BIOPROCESS,
-            NAMESPACE: 'REACTOME',
-            NAME: self.name,
-            IDENTIFIER: self.reactome_id
-        }
+        return bioprocess(
+            namespace=REACTOME,
+            name=str(self.name),
+            identifier=str(self.reactome_id)
+        )
+
+    def get_pathway_pathway_hierarchy(self):
+        NotImplemented
 
 
 class Species(Base):
@@ -117,13 +120,19 @@ class Protein(Base):
 
     def as_pybel_dict(self):
         """Function to serialize to PyBEL node data dictionary.
-        :rtype: dict
+        :rtype: pybel.dsl.protein
         """
-        return {
-            FUNCTION: BIOPROCESS,
-            NAMESPACE: 'UNIPROT',
-            IDENTIFIER: self.uniprot_id
-        }
+        return protein(
+            namespace=HGNC,
+            name=str(self.get_hgnc_symbol(self.uniprot_id)),
+            identifier=str(self.uniprot_id)
+        )
+
+    def get_hgnc_symbol(self, uniprot_id):
+        NotImplemented
+
+    def get_hgnc_id(self, uniprot_id):
+        NotImplemented
 
 
 class Chemical(Base):
@@ -139,10 +148,13 @@ class Chemical(Base):
 
     def as_pybel_dict(self):
         """Function to serialize to PyBEL node data dictionary.
-        :rtype: dict
+        :rtype: pybel.dsl.abundance
         """
-        return {
-            FUNCTION: BIOPROCESS,
-            NAMESPACE: 'CHEBI',
-            IDENTIFIER: self.chebi_id
-        }
+        return abundance(
+            namespace=CHEBI,
+            name=str(self.get_chebi_name(self.chebi_id)),
+            identifier=str(self.chebi_id)
+        )
+
+    def get_chebi_name(self, chebi_id):
+        NotImplemented

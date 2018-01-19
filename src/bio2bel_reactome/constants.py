@@ -14,3 +14,9 @@ UNIPROT_PATHWAYS_URL = 'http://reactome.org/download/current/UniProt2Reactome_Al
 CHEBI_PATHWAYS_URL = 'http://reactome.org/download/current/ChEBI2Reactome_All_Levels.txt'
 
 REACTOME_PATHWAY_LINK = 'http://reactome.org/PathwayBrowser/'
+
+# Namespace constants
+
+REACTOME = 'REACTOME'
+HGNC = 'HGNC'
+CHEBI = 'CHEBI'

@@ -6,6 +6,7 @@ from bio2bel_reactome.enrich import map_hgnc_node
 from bio2bel_reactome.models import Protein
 from tests.constants import DatabaseMixin
 
+from bio2bel_hgnc.manager import Manager as bio2bel_hgnc_manager
 
 class TestParse(DatabaseMixin):
     """Tests the parsing module"""
@@ -21,9 +22,8 @@ class TestParse(DatabaseMixin):
     def test_uniprot_rgd_mapping(self):
         """ Maps uniprot id http://www.uniprot.org/uniprot/A0A0G2K0F2 to Rat Cd80"""
 
-        pyhgnc_manager = None
         cd80_uniprot = self.manager.session.query(Protein).filter(Protein.uniprot_id == 'A0A0G2K0F2').one_or_none()
 
-        cd80_hgnc = map_hgnc_node(manager=pyhgnc_manager, identifier=cd80_uniprot)
+        cd80_hgnc = map_hgnc_node(manager=bio2bel_hgnc_manager, identifier=cd80_uniprot)
 
         self.help_check_rat_cd80_model(cd80_hgnc)
