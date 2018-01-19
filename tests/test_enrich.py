@@ -27,3 +27,15 @@ class TestParse(DatabaseMixin):
         cd80_hgnc = map_hgnc_node(manager=bio2bel_hgnc_manager, identifier=cd80_uniprot)
 
         self.help_check_rat_cd80_model(cd80_hgnc)
+
+    def test_get_all_human_pathways(self):
+        """Checks get all human pathways"""
+
+        human_pathways = self.manager.get_pathways_by_species('Homo sapiens')
+        xenopus_pathways = self.manager.get_pathways_by_species('Xenopus tropicalis')
+        should_be_none = self.manager.get_pathways_by_species('invalid species')
+
+        self.assertEqual(4, len(human_pathways))
+        self.assertEqual(4, len(human_pathways))
+        self.assertEqual(None, should_be_none)
+

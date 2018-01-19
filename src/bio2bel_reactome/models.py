@@ -61,6 +61,7 @@ class Pathway(Base):
 
     species = relationship(
         'Species',
+        backref='pathways'
     )
 
     species_id = Column(Integer, ForeignKey('{}.id'.format(SPECIES_TABLE_NAME)))

@@ -6,11 +6,11 @@ This module populates the tables of bio2bel_reactome
 
 import logging
 
+from bio2bel.utils import get_connection
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from tqdm import tqdm
 
-from bio2bel.utils import get_connection
 from bio2bel_reactome.constants import MODULE_NAME
 from bio2bel_reactome.models import Base, Chemical, Pathway, Protein, Species
 from bio2bel_reactome.parsers import *
@@ -24,7 +24,7 @@ class Manager(object):
         self.engine = create_engine(self.connection)
         self.session_maker = sessionmaker(bind=self.engine, autoflush=False, expire_on_commit=False)
         self.session = self.session_maker()
-        self.make_tables()
+        self.create_all()
 
     def create_all(self, check_first=True):
         """Create tables"""
@@ -47,7 +47,7 @@ class Manager(object):
 
         raise TypeError
 
-    """Custom Methods to Populate the DB"""
+    """Custom query methods"""
 
     def get_pathway_by_id(self, reactome_id):
         """Gets a pathway by its reactome id
@@ -56,6 +56,17 @@ class Manager(object):
         :rtype: Optional[Pathway]
         """
         return self.session.query(Pathway).filter(Pathway.reactome_id == reactome_id).one_or_none()
+
+    def get_pathways_by_species(self, species_name):
+        """Gets pathways by species"""
+        filtered_species =  self.session.query(Species).filter(Species.name == species_name).one_or_none()
+
+        if not filtered_species:
+            return None
+
+        return filtered_species.pathways
+
+    """Custom Methods to Populate the DB"""
 
     def _populate_pathways(self, url=None):
         """ Populate pathway table
