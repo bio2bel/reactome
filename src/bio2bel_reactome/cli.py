@@ -69,6 +69,12 @@ def deploy(force):
 
 
 @main.command()
+def export_pathways(help="Exports the pathway-genesets relationship as an excel sheet"):
+    """Exports the pathway - geneset data as an excel file"""
+    NotImplemented
+
+
+@main.command()
 @click.option('-c', '--connection', help="Defaults to {}".format(DEFAULT_CACHE_CONNECTION))
 def web(connection):
     """Run web"""

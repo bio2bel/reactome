@@ -66,7 +66,3 @@ class TestParse(DatabaseMixin):
              for children in parent.children
              }
         )
-
-
-if __name__ == '__main__':
-    unittest.main()
