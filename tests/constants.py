@@ -28,7 +28,6 @@ class DatabaseMixin(unittest.TestCase):
         # create temporary database
         cls.manager = Manager(connection=cls.connection)
 
-        print('sdfadf')
         # fill temporary database with test data
         cls.manager.populate(
             pathways_path=pathways,
