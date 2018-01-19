@@ -7,6 +7,11 @@ from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
+from bio2bel_reactome.other_bio2bel_connections import (
+    chebi_id_to_name,
+    uniprot_id_to_hgnc_symbol,
+    uniprot_id_to_hgnc_id
+)
 from bio2bel_reactome.constants import HGNC, REACTOME, CHEBI
 
 Base = declarative_base()
@@ -126,14 +131,16 @@ class Protein(Base):
         return protein(
             namespace=HGNC,
             name=str(self.get_hgnc_symbol(self.uniprot_id)),
-            identifier=str(self.uniprot_id)
+            identifier=str(self.get_hgnc_id(self.uniprot_id))
         )
 
     def get_hgnc_symbol(self, uniprot_id):
-        NotImplemented
+        """Returns HGNC symbol of the protein"""
+        return uniprot_id_to_hgnc_symbol[uniprot_id]
 
     def get_hgnc_id(self, uniprot_id):
-        NotImplemented
+        """Returns HGNC id of the protein"""
+        return uniprot_id_to_hgnc_id[uniprot_id]
 
 
 class Chemical(Base):
@@ -158,4 +165,5 @@ class Chemical(Base):
         )
 
     def get_chebi_name(self, chebi_id):
-        NotImplemented
+        """Returns chebi name"""
+        return chebi_id_to_name[chebi_id]

@@ -66,6 +66,14 @@ class Manager(object):
 
         return filtered_species.pathways
 
+    def get_chemical_by_chebi_id(self, chebi_id):
+        """Gets chemical by CHEBI id"""
+        return self.session.query(Chemical).filter(Chemical.chebi_id == chebi_id).one_or_none()
+
+    def get_protein_by_uniprot_id(self, uniprot_id):
+        """Gets protein by UniProt id"""
+        return self.session.query(Protein).filter(Protein.uniprot_id == uniprot_id).one_or_none()
+
     """Custom Methods to Populate the DB"""
 
     def _populate_pathways(self, url=None):
