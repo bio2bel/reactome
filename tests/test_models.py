@@ -17,7 +17,7 @@ class TestModels(DatabaseMixin):
 
         self.assertEqual(
             cd86_uniprot.as_pybel_dict(),
-            protein(namespace=HGNC, name='CD86')
+            protein(namespace='UNIPROT', name='A0A0G2JXF7', identifier='A0A0G2JXF7')
         )
 
     def test_chebi_exporting(self):
@@ -27,5 +27,5 @@ class TestModels(DatabaseMixin):
 
         self.assertEqual(
             adp_chebi.as_pybel_dict(),
-            abundance(namespace=CHEBI, name='ADP')
+            abundance(namespace=CHEBI, name='ADP', identifier='16761')
         )

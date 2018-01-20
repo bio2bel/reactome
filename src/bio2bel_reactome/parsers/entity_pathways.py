@@ -23,6 +23,7 @@ __all__ = [
     'get_chemicals_pathways_df',
     'get_proteins_pathways_df',
     'parse_entities_pathways',
+    'get_hgnc_symbol_id_by_uniprot_id',
 ]
 
 
@@ -58,14 +59,40 @@ def get_chemicals_pathways_df(url=None):
     return _get_data_helper(CHEBI_PATHWAYS_URL, url=url)
 
 
-def parse_entities_pathways(entities_pathways_df):
+def parse_entities_pathways(entities_pathways_df, only_human=None):
     """ Parser the entity - pathway dataframe
 
     :param pandas.DataFrame entities_pathways_df: File as dataframe
+    :param Optional[bool]: parse only human entities
     :rtype: list[tuple]
     :return Object representation dictionary (entity_id, reactome_id, evidence)
     """
+
+    if only_human:
+        return [
+            (row[0], row[1], row[4])
+            for _, row in entities_pathways_df.iterrows()
+            if row[5] == 'Homo sapiens'
+        ]
+
     return [
         (row[0], row[1], row[4])
         for _, row in entities_pathways_df.iterrows()
     ]
+
+
+def get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id):
+    """Returns HGNC symbol and id from PyHGNC query
+
+    :param bio2bel.hgnc.Manager HGNC manager: Manager
+    :param str uniprot_id: UniProt identifier
+    :rtype tuple
+    :return tuple with HGNC symbol and identifier
+    """
+
+    query = hgnc_manager.hgnc(uniprotid=uniprot_id)
+
+    if not query:
+        return None
+
+    return (query[0].symbol, query[0].identifier)

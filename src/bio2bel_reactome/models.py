@@ -7,12 +7,8 @@ from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-from bio2bel_reactome.other_bio2bel_connections import (
-    chebi_id_to_name,
-    uniprot_id_to_hgnc_symbol,
-    uniprot_id_to_hgnc_id
-)
-from bio2bel_reactome.constants import HGNC, REACTOME, CHEBI
+from bio2bel_reactome.other_bio2bel_connections import chebi_id_to_name
+from bio2bel_reactome.constants import HGNC, REACTOME, CHEBI, UNIPROT
 
 Base = declarative_base()
 
@@ -121,6 +117,10 @@ class Protein(Base):
 
     uniprot_id = Column(String, unique=True, nullable=False)
 
+    # Only for Human Genes
+    hgnc_symbol = Column(String, nullable=True)
+    hgnc_id = Column(String, nullable=True)
+
     def __repr__(self):
         return self.uniprot_id
 
@@ -128,19 +128,20 @@ class Protein(Base):
         """Function to serialize to PyBEL node data dictionary.
         :rtype: pybel.dsl.protein
         """
-        return protein(
-            namespace=HGNC,
-            name=str(self.get_hgnc_symbol(self.uniprot_id)),
-            identifier=str(self.get_hgnc_id(self.uniprot_id))
-        )
 
-    def get_hgnc_symbol(self, uniprot_id):
-        """Returns HGNC symbol of the protein"""
-        return uniprot_id_to_hgnc_symbol[uniprot_id]
+        if self.hgnc_symbol and self.hgnc_id:
+            return protein(
+                namespace=HGNC,
+                name=self.hgnc_symbol,
+                identifier=self.hgnc_id
+            )
 
-    def get_hgnc_id(self, uniprot_id):
-        """Returns HGNC id of the protein"""
-        return uniprot_id_to_hgnc_id[uniprot_id]
+        else:
+            return protein(
+                namespace=UNIPROT,
+                name=self.uniprot_id,
+                identifier=self.uniprot_id
+            )
 
 
 class Chemical(Base):

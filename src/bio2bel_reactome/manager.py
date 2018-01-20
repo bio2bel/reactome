@@ -11,6 +11,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from tqdm import tqdm
 
+from bio2bel_hgnc.manager import Manager as HgncManager
+
 from bio2bel_reactome.constants import MODULE_NAME
 from bio2bel_reactome.models import Base, Chemical, Pathway, Protein, Species
 from bio2bel_reactome.parsers import *
@@ -59,7 +61,7 @@ class Manager(object):
 
     def get_pathways_by_species(self, species_name):
         """Gets pathways by species"""
-        filtered_species =  self.session.query(Species).filter(Species.name == species_name).one_or_none()
+        filtered_species = self.session.query(Species).filter(Species.name == species_name).one_or_none()
 
         if not filtered_species:
             return None
@@ -136,18 +138,21 @@ class Manager(object):
 
         self.session.commit()
 
-    def _pathway_protein(self, url=None):
+    def _pathway_protein(self, url=None, only_human=None):
         """ Populates UniProt Tables
         :param url: Optional[str] url: url from pathway protein file
-
+        :param url: Optional[bool] only_human: only store human genes
         """
 
-        log.info("downloading proteins")
+        log.info("downloading proteins. This might take a couple of minutes depending on your internet connection...")
 
         uniprot_df = get_proteins_pathways_df(url=url)
-        uniprots = parse_entities_pathways(uniprot_df)
+        uniprots = parse_entities_pathways(entities_pathways_df=uniprot_df, only_human=only_human)
 
-        log.info("populating proteins")
+        log.info("connecting to PyHGNC manager")
+        hgnc_manager = HgncManager()
+
+        log.info("populating protein data")
         pid_protein = {}
         missing_reactome_ids = set()
 
@@ -159,7 +164,16 @@ class Manager(object):
             if uniprot_id in pid_protein:
                 protein = pid_protein[uniprot_id]
             else:
-                protein = Protein(uniprot_id=uniprot_id)
+
+                hgnc_info = get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id)
+
+                if not hgnc_info:
+                    protein = Protein(uniprot_id=uniprot_id)
+
+                # Human gene is stored with additional info
+                else:
+                    protein = Protein(uniprot_id=uniprot_id, hgnc_symbol=hgnc_info[0], hgnc_id=hgnc_info[1])
+
                 pid_protein[uniprot_id] = protein
                 self.session.add(protein)
 
@@ -177,16 +191,17 @@ class Manager(object):
 
         self.session.commit()
 
-    def _pathway_chemical(self, url=None):
+    def _pathway_chemical(self, url=None, only_human=None):
         """ Populates Chebi Tables
 
         :param url: Optional[str] url: url from pathway chemical file
+        :param url: Optional[bool] only_human: only store human chemicals
         """
 
         log.info("downloading chemicals")
 
         chebi_df = get_chemicals_pathways_df(url=url)
-        chebis = parse_entities_pathways(chebi_df)
+        chebis = parse_entities_pathways(entities_pathways_df=chebi_df, only_human=None)
 
         log.info("populating chemicals")
         cid_chemical = {}
@@ -219,7 +234,8 @@ class Manager(object):
         self.session.commit()
 
     def populate(self, pathways_path=None, pathways_hierarchy_path=None, pathways_proteins_path=None,
-                 pathways_chemicals_path=None):
+                 pathways_chemicals_path=None, only_human=None):
+
         """ Populates all tables
 
         :param pathways_path: Optional[str] url: url from pathway table file
@@ -229,5 +245,5 @@ class Manager(object):
         """
         self._populate_pathways(url=pathways_path)
         self._pathway_hierarchy(url=pathways_hierarchy_path)
-        self._pathway_protein(url=pathways_proteins_path)
-        self._pathway_chemical(url=pathways_chemicals_path)
+        self._pathway_protein(url=pathways_proteins_path, only_human=only_human)
+        self._pathway_chemical(url=pathways_chemicals_path, only_human=only_human)

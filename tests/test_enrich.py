@@ -10,13 +10,14 @@ from bio2bel_hgnc.manager import Manager as bio2bel_hgnc_manager
 class TestEnrich(DatabaseMixin):
     """Tests the parsing module"""
 
-    def test_help_check_rat_cd80_model(self, model):
-        """Checks if the given model is CD33 (https://rgd.mcw.edu/rgdweb/report/gene/main.html?id=RGD:2314)
-        :param pyhgnc.manager.models.HGNC model: The result from a search of the PyHGNC database
-        """
-        self.assertEqual('2314', str(model.identifier))
-        self.assertEqual('Cd80', model.symbol)
-        self.assertEqual('Cd80 molecule', model.name)
+    # TODO: deal with other species
+    # def test_help_check_rat_cd80_model(self, model):
+    #     """Checks if the given model is CD33 (https://rgd.mcw.edu/rgdweb/report/gene/main.html?id=RGD:2314)
+    #     :param pyhgnc.manager.models.HGNC model: The result from a search of the PyHGNC database
+    #     """
+    #     self.assertEqual('2314', str(model.identifier))
+    #     self.assertEqual('Cd80', model.symbol)
+    #     self.assertEqual('Cd80 molecule', model.name)
     #
     # def test_uniprot_rgd_mapping(self):
     #     """ Maps uniprot id http://www.uniprot.org/uniprot/A0A0G2K0F2 to Rat Cd80"""
