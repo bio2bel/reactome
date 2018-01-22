@@ -4,7 +4,10 @@
 
 import logging
 
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, send_file
+
+from bio2bel_reactome.manager import Manager
+from bio2bel_reactome.utils import dict_to_pandas_df
 
 log = logging.getLogger(__name__)
 
@@ -30,3 +33,22 @@ def about():
     """About page
     """
     return render_template('about.html')
+
+
+@ui_blueprint.route('/export_genesets', methods=['GET', 'POST'])
+def export_genesets():
+    """Export genesets page
+    """
+
+    m = Manager()
+
+    log.info("Querying the database")
+
+    genesets = dict_to_pandas_df(m.export_genesets())
+
+    return send_file(
+        genesets.to_csv('genesets.csv', index=False),
+        mimetype='text/csv',
+        attachment_filename='genesets.csv',
+        as_attachment=True
+    )

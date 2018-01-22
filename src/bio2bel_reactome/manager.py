@@ -54,7 +54,7 @@ class Manager(object):
         """Returns pathway - genesets mapping"""
         return {
             pathway.name: {
-                protein.get_hgnc_symbol(protein.hgnc_id)
+                protein.hgnc_symbol
                 for protein in pathway.proteins
             }
             for pathway in self.session.query(Pathway).all()

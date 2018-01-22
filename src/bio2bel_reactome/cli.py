@@ -6,11 +6,11 @@ import logging
 import os
 
 import click
-from pandas import DataFrame, Series
 
 from bio2bel_reactome.constants import DEFAULT_CACHE_CONNECTION
 from bio2bel_reactome.manager import Manager
 from bio2bel_reactome.to_belns import deploy_to_arty
+from bio2bel_reactome.utils import dict_to_pandas_df
 
 log = logging.getLogger(__name__)
 
@@ -82,13 +82,7 @@ def export(connection):
 
     log.info("Querying the database")
 
-    # https://stackoverflow.com/questions/19736080/creating-dataframe-from-a-dictionary-where-entries-have-different-lengths
-    genesets = DataFrame(
-        dict([
-            (k, Series(list(v)))
-            for k, v in m.export_genesets().items()
-        ])
-    )
+    genesets = dict_to_pandas_df(m.export_genesets())
 
     log.info("Geneset exported to '{}/genesets.csv'".format(os.getcwd()))
 
