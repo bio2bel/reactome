@@ -7,7 +7,6 @@ import time
 
 import flask_admin
 from flask import Flask
-from flask_admin.contrib.sqla import ModelView
 from flask_bootstrap import Bootstrap
 
 from bio2bel_reactome.main_service import ui_blueprint
@@ -21,10 +20,10 @@ bootstrap = Bootstrap()
 
 def add_admin(app, session, **kwargs):
     admin = flask_admin.Admin(app, **kwargs)
-    admin.add_view(ModelView(Pathway, session))
-    admin.add_view(ModelView(Protein, session))
-    admin.add_view(ModelView(Chemical, session))
-    admin.add_view(ModelView(Species, session))
+    admin.add_view(PathwayView(Pathway, session))
+    admin.add_view(ProteinView(Protein, session))
+    admin.add_view(ChemicalView(Chemical, session))
+    admin.add_view(SpeciesView(Species, session))
     return admin
 
 

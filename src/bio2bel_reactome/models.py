@@ -2,13 +2,14 @@
 
 """Reactome database model"""
 
+from flask_admin.contrib.sqla import ModelView
 from pybel.dsl import bioprocess, protein, abundance
 from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-from bio2bel_reactome.other_bio2bel_connections import chebi_id_to_name
 from bio2bel_reactome.constants import HGNC, REACTOME, CHEBI, UNIPROT
+from bio2bel_reactome.other_bio2bel_connections import chebi_id_to_name
 
 Base = declarative_base()
 
@@ -168,3 +169,34 @@ class Chemical(Base):
     def get_chebi_name(self, chebi_id):
         """Returns chebi name"""
         return chebi_id_to_name[chebi_id]
+
+
+class PathwayView(ModelView):
+    """Pathway view in Flask-admin"""
+    column_searchable_list = (
+        Pathway.reactome_id,
+        Pathway.name,
+    )
+
+
+class ProteinView(ModelView):
+    """Protein view in Flask-admin"""
+    column_searchable_list = (
+        Protein.hgnc_symbol,
+        Protein.uniprot_id,
+        Protein.hgnc_id
+    )
+
+
+class SpeciesView(ModelView):
+    """Species view in Flask-admin"""
+    column_searchable_list = (
+        Species.name,
+    )
+
+
+class ChemicalView(ModelView):
+    """Chemical view in Flask-admin"""
+    column_searchable_list = (
+        Chemical.chebi_id,
+    )
