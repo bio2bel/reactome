@@ -1,13 +1,22 @@
 # -*- coding: utf-8 -*-
 
-""" This module contains the flask application to visualize the db"""
+""" This module contains the flask-admin application to visualize the db"""
+
+import logging
+import time
 
 import flask_admin
 from flask import Flask
 from flask_admin.contrib.sqla import ModelView
+from flask_bootstrap import Bootstrap
 
+from bio2bel_reactome.main_service import ui_blueprint
 from bio2bel_reactome.manager import Manager
 from bio2bel_reactome.models import *
+
+log = logging.getLogger(__name__)
+
+bootstrap = Bootstrap()
 
 
 def add_admin(app, session, **kwargs):
@@ -25,9 +34,18 @@ def create_app(connection=None, url=None):
     :type connection: Optional[str]
     :rtype: flask.Flask
     """
+
+    t = time.time()
+
     app = Flask(__name__)
+    bootstrap.init_app(app)
+
     manager = Manager(connection=connection)
     add_admin(app, manager.session, url=url)
+    app.register_blueprint(ui_blueprint)
+
+    log.info('Done building %s in %.2f seconds', app, time.time() - t)
+
     return app
 
 

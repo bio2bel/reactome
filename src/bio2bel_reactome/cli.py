@@ -79,9 +79,13 @@ def export_pathways(help="Exports the pathway-genesets relationship as an excel 
 
 
 @main.command()
+@click.option('-v', '--debug', count=True, help="Turn on debugging.")
 @click.option('-c', '--connection', help="Defaults to {}".format(DEFAULT_CACHE_CONNECTION))
-def web(connection):
+def web(debug, connection):
     """Run web"""
+
+    set_debug_param(debug)
+
     from bio2bel_reactome.web import create_app
     app = create_app(connection=connection)
     app.run(host='0.0.0.0', port=5000)
