@@ -7,11 +7,10 @@ This module populates the tables of bio2bel_reactome
 import logging
 
 from bio2bel.utils import get_connection
+from bio2bel_hgnc.manager import Manager as HgncManager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from tqdm import tqdm
-
-from bio2bel_hgnc.manager import Manager as HgncManager
 
 from bio2bel_reactome.constants import MODULE_NAME
 from bio2bel_reactome.models import Base, Chemical, Pathway, Protein, Species
@@ -50,6 +49,16 @@ class Manager(object):
         raise TypeError
 
     """Custom query methods"""
+
+    def export_genesets(self):
+        """Returns pathway - genesets mapping"""
+        return {
+            pathway.name: {
+                protein.get_hgnc_symbol(protein.hgnc_id)
+                for protein in pathway.proteins
+            }
+            for pathway in self.session.query(Pathway).all()
+        }
 
     def get_pathway_by_id(self, reactome_id):
         """Gets a pathway by its reactome id
