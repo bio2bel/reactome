@@ -7,14 +7,11 @@ import time
 
 import flask_admin
 from flask import Flask
-from flask_bootstrap import Bootstrap
 
 from bio2bel_reactome.manager import Manager
 from bio2bel_reactome.models import *
 
 log = logging.getLogger(__name__)
-
-bootstrap = Bootstrap()
 
 
 def add_admin(app, session, **kwargs):
@@ -36,7 +33,6 @@ def create_app(connection=None, url=None):
     t = time.time()
 
     app = Flask(__name__)
-    bootstrap.init_app(app)
 
     manager = Manager(connection=connection)
     add_admin(app, manager.session, url=url)
