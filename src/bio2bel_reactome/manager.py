@@ -50,8 +50,25 @@ class Manager(object):
 
     """Custom query methods"""
 
-    def export_genesets(self):
-        """Returns pathway - genesets mapping"""
+    def export_genesets(self, species=None):
+        """Returns pathway - genesets mapping
+
+        :param opt[str] species: pathways specific to a species
+        :rtype dict[set]
+        :return: pathways' genesets
+        """
+
+        if species:
+            return {
+                pathway.name: {
+                    protein.hgnc_symbol
+                    for protein in pathway.proteins
+                }
+                for pathway in self.session.query(Pathway).all()
+                if pathway.species.name == species
+            }
+
+        # if no species return all
         return {
             pathway.name: {
                 protein.hgnc_symbol

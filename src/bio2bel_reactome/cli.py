@@ -76,13 +76,14 @@ def deploy(force):
 
 @main.command()
 @click.option('-c', '--connection', help="Defaults to {}".format(DEFAULT_CACHE_CONNECTION))
-def export(connection):
+@click.option('-species', '--species', help="Specific species ex: --species='Homo sapiens'")
+def export(connection, species):
     """Export all pathway - gene info to a excel file"""
     m = Manager(connection=connection)
 
     log.info("Querying the database")
 
-    genesets = dict_to_pandas_df(m.export_genesets())
+    genesets = dict_to_pandas_df(m.export_genesets(species=species))
 
     log.info("Geneset exported to '{}/genesets.csv'".format(os.getcwd()))
 
