@@ -11,11 +11,16 @@ PACKAGES = setuptools.find_packages(where='src')
 META_PATH = os.path.join('src', 'bio2bel_{}'.format(BIO2BEL_MODULE), '__init__.py')
 INSTALL_REQUIRES = [
     'click',
+    'bio2bel',
+    'bio2bel_hgnc',
+    'pybel>=0.10.1',
+    'pybel-tools',
     'pybel>=0.10.1',
     'sqlalchemy==1.1.15',
     'pandas',
     'tqdm',
-    'bio2bel',
+    'flask',
+    'flask_admin',
 ]
 ENTRY_POINTS = {
     'bio2bel': [
