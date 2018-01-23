@@ -60,6 +60,26 @@ class Manager(object):
             for pathway in self.session.query(Pathway).all()
         }
 
+    def get_or_create_pathway(self, reactome_id, name, species):
+        """Gets an pathway from the database or creates it
+        :param str reactome_id: kegg identifier
+        :param str name: name of the pathway
+        :param species bio2bel_reactome.models.Species: Species object
+        :rtype: Pathway
+        """
+        pathway = self.get_pathway_by_id(reactome_id)
+
+        if pathway is None:
+            pathway = Pathway(
+                reactome_id=reactome_id,
+                name=name,
+                species=species
+            )
+            self.session.add(pathway)
+
+        return pathway
+
+
     def get_pathway_by_id(self, reactome_id):
         """Gets a pathway by its reactome id
 
@@ -111,7 +131,7 @@ class Manager(object):
         log.info("populating pathways")
 
         for reactome_id, (name, species) in tqdm(pathways_dict.items(), desc='Loading pathways'):
-            pathway = Pathway(
+            pathway = self.get_or_create_pathway(
                 reactome_id=reactome_id,
                 name=name,
                 species=species_name_to_model[species]
@@ -177,6 +197,7 @@ class Manager(object):
                 hgnc_info = get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id)
 
                 if not hgnc_info:
+                    log.warning('{} has no HGNC info'.format(uniprot_id))
                     protein = Protein(uniprot_id=uniprot_id)
 
                 # Human gene is stored with additional info
