@@ -5,6 +5,5 @@ bio2bel_hgnc
 pandas
 tqdm
 flask
-flask-bootstrap
 flask_admin
 bio2bel

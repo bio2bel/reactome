@@ -9,7 +9,6 @@ import flask_admin
 from flask import Flask
 from flask_bootstrap import Bootstrap
 
-from bio2bel_reactome.main_service import ui_blueprint
 from bio2bel_reactome.manager import Manager
 from bio2bel_reactome.models import *
 
@@ -41,7 +40,6 @@ def create_app(connection=None, url=None):
 
     manager = Manager(connection=connection)
     add_admin(app, manager.session, url=url)
-    app.register_blueprint(ui_blueprint)
 
     log.info('Done building %s in %.2f seconds', app, time.time() - t)
 
