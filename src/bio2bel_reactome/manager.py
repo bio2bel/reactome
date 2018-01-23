@@ -197,6 +197,7 @@ class Manager(object):
                 hgnc_info = get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id)
 
                 if not hgnc_info:
+
                     log.warning('{} has no HGNC info'.format(uniprot_id))
                     protein = Protein(uniprot_id=uniprot_id)
 

@@ -93,6 +93,35 @@ def get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id):
     query = hgnc_manager.hgnc(uniprotid=uniprot_id)
 
     if not query:
+
+        # Checks if minus is part of the uniprot id -> isoform signature
+        if '-' in uniprot_id:
+            isoform = _check_uniprot_uniform(hgnc_manager, uniprot_id)
+
+            if not isoform:
+                return None
+
+            return (isoform[0].symbol, isoform[0].identifier)
+
+        return None
+
+    return (query[0].symbol, query[0].identifier)
+
+
+def _check_uniprot_uniform(hgnc_manager, uniprot_id):
+    """Checks if the uniprot id with 'minus' corresponds to an isoform and returns the original id
+
+    :param bio2bel.hgnc.Manager HGNC manager: Manager
+    :param str uniprot_id: UniProt identifier
+    :rtype tuple
+    :return tuple with HGNC symbol and identifier
+    """
+
+    isoform = uniprot_id.split('-')[0]
+
+    query = hgnc_manager.hgnc(uniprotid=isoform)
+
+    if not query:
         return None
 
     return (query[0].symbol, query[0].identifier)
