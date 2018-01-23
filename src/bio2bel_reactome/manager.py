@@ -184,6 +184,7 @@ class Manager(object):
         log.info("populating protein data")
         pid_protein = {}
         missing_reactome_ids = set()
+        missing_hgnc_info = set()
 
         for uniprot_id, reactome_id, evidence in tqdm(uniprots, desc='Loading proteins'):
             if uniprot_id is None:
@@ -199,6 +200,7 @@ class Manager(object):
                 if not hgnc_info:
 
                     log.warning('{} has no HGNC info'.format(uniprot_id))
+                    missing_hgnc_info.add(uniprot_id)
                     protein = Protein(uniprot_id=uniprot_id)
 
                 # Human gene is stored with additional info
@@ -219,6 +221,9 @@ class Manager(object):
 
         if missing_reactome_ids:
             log.warning('missing %d reactome ids', len(missing_reactome_ids))
+
+        if missing_hgnc_info:
+            log.warning('missing %d hgncs', len(missing_hgnc_info))
 
         self.session.commit()
 

@@ -101,7 +101,7 @@ def get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id):
             if not isoform:
                 return None
 
-            return (isoform[0].symbol, isoform[0].identifier)
+            return (isoform[0], isoform[0])
 
         return None
 
