@@ -264,17 +264,17 @@ class Manager(object):
 
         self.session.commit()
 
-    def _pathway_chemical(self, url=None, only_human=None):
+    def _pathway_chemical(self, url=None, only_human=True):
         """ Populates Chebi Tables
 
         :param url: Optional[str] url: url from pathway chemical file
-        :param url: Optional[bool] only_human: only store human chemicals
+        :param bool only_human: only store human chemicals
         """
 
         log.info("downloading chemicals")
 
         chebi_df = get_chemicals_pathways_df(url=url)
-        chebis = parse_entities_pathways(entities_pathways_df=chebi_df, only_human=None)
+        chebis = parse_entities_pathways(entities_pathways_df=chebi_df, only_human=only_human)
 
         log.info("populating chemicals")
         cid_chemical = {}
@@ -307,7 +307,7 @@ class Manager(object):
         self.session.commit()
 
     def populate(self, pathways_path=None, pathways_hierarchy_path=None, pathways_proteins_path=None,
-                 pathways_chemicals_path=None, only_human=None):
+                 pathways_chemicals_path=None, only_human=True):
 
         """ Populates all tables
 
@@ -315,6 +315,7 @@ class Manager(object):
         :param pathways_hierarchy_path: Optional[str] url: url from pathway hierarchy file
         :param pathways_proteins_path: Optional[str] url: url from pathway protein file
         :param pathways_chemicals_path: Optional[str] url: url from pathway chemical file
+        :param bool only_human: only store human chemicals
         """
         self._populate_pathways(url=pathways_path)
         self._pathway_hierarchy(url=pathways_hierarchy_path)
