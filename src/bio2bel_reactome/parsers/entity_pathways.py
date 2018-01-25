@@ -59,7 +59,7 @@ def get_chemicals_pathways_df(url=None):
     return _get_data_helper(CHEBI_PATHWAYS_URL, url=url)
 
 
-def parse_entities_pathways(entities_pathways_df, only_human=None):
+def parse_entities_pathways(entities_pathways_df, only_human=True):
     """ Parser the entity - pathway dataframe
 
     :param pandas.DataFrame entities_pathways_df: File as dataframe

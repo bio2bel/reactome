@@ -203,10 +203,11 @@ class Manager(object):
 
         self.session.commit()
 
-    def _pathway_protein(self, url=None, only_human=None):
-        """ Populates UniProt Tables
-        :param url: Optional[str] url: url from pathway protein file
-        :param url: Optional[bool] only_human: only store human genes
+    def _pathway_protein(self, url=None, only_human=True):
+        """Populates UniProt Tables
+
+        :param Optional[str] url: url from pathway protein file
+        :param bool url: only_human: only store human genes. Defaults to True.
         """
 
         log.info("downloading proteins. This might take a couple of minutes depending on your internet connection...")
