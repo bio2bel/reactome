@@ -5,6 +5,8 @@ This module populates the tables of bio2bel_reactome
 """
 
 import logging
+import itertools
+from collections import Counter
 
 from bio2bel.utils import get_connection
 from bio2bel_hgnc.manager import Manager as HgncManager
@@ -50,11 +52,29 @@ class Manager(object):
 
     """Custom query methods"""
 
+    def query_gene_set(self, gene_set):
+        """Returns pathway counter dictionary
+
+        :param gene_set: gene set to be queried
+        :rtype: dict
+        :return: Counter dictionary
+        """
+        proteins = self.session.query(Protein).filter(Protein.hgnc_symbol.in_(gene_set)).all()
+
+        pathways_lists = [
+            protein.get_pathways()
+            for protein in proteins
+        ]
+
+        # Flat the pathways lists and applies Counter
+        return Counter(itertools.chain(*pathways_lists))
+
+
     def export_genesets(self, species=None):
         """Returns pathway - genesets mapping
 
         :param opt[str] species: pathways specific to a species
-        :rtype dict[set]
+        :rtype: dict[set]
         :return: pathways' genesets
         """
 
@@ -95,7 +115,6 @@ class Manager(object):
             self.session.add(pathway)
 
         return pathway
-
 
     def get_pathway_by_id(self, reactome_id):
         """Gets a pathway by its reactome id

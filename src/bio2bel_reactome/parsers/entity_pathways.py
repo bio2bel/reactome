@@ -86,7 +86,7 @@ def get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id):
 
     :param bio2bel.hgnc.Manager HGNC manager: Manager
     :param str uniprot_id: UniProt identifier
-    :rtype tuple
+    :rtype: tuple
     :return tuple with HGNC symbol and identifier
     """
 
@@ -113,7 +113,7 @@ def _check_uniprot_uniform(hgnc_manager, uniprot_id):
 
     :param bio2bel.hgnc.Manager HGNC manager: Manager
     :param str uniprot_id: UniProt identifier
-    :rtype tuple
+    :rtype: tuple
     :return tuple with HGNC symbol and identifier
     """
 

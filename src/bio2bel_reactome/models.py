@@ -144,6 +144,13 @@ class Protein(Base):
                 identifier=self.uniprot_id
             )
 
+    def get_pathways(self):
+        """Returns the pathways associated with the protein"""
+        return {
+            pathway.name
+            for pathway in self.pathways
+        }
+
 
 class Chemical(Base):
     """Chemical Table"""
