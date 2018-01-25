@@ -4,16 +4,15 @@
 This module populates the tables of bio2bel_reactome
 """
 
-import logging
 import itertools
-from collections import Counter
-
-from bio2bel.utils import get_connection
+import logging
 from bio2bel_hgnc.manager import Manager as HgncManager
+from collections import Counter
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from tqdm import tqdm
 
+from bio2bel.utils import get_connection
 from bio2bel_reactome.constants import MODULE_NAME
 from bio2bel_reactome.models import Base, Chemical, Pathway, Protein, Species
 from bio2bel_reactome.parsers import *
@@ -50,6 +49,34 @@ class Manager(object):
 
         raise TypeError
 
+    def count_pathways(self):
+        """Counts the pathways in the database
+
+        :rtype: int
+        """
+        return self.session.query(Pathway).count()
+
+    def count_chemicals(self):
+        """Counts the chemicals in the database
+
+        :rtype: int
+        """
+        return self.session.query(Chemical).count()
+
+    def count_proteins(self):
+        """Counts the proteins in the database
+
+        :rtype: int
+        """
+        return self.session.query(Protein).count()
+
+    def count_species(self):
+        """Counts the species in the database
+
+        :rtype: int
+        """
+        return self.session.query(Species).count()
+
     """Custom query methods"""
 
     def query_gene_set(self, gene_set):
@@ -68,7 +95,6 @@ class Manager(object):
 
         # Flat the pathways lists and applies Counter
         return Counter(itertools.chain(*pathways_lists))
-
 
     def export_genesets(self, species=None):
         """Returns pathway - genesets mapping

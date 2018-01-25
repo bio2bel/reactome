@@ -12,19 +12,19 @@ class TestParse(DatabaseMixin):
     """Tests the parsing module"""
 
     def test_pathway_count(self):
-        pathway_number = self.manager.session.query(Pathway).count()
+        pathway_number = self.manager.count_pathways()
         self.assertEqual(21, pathway_number)
 
     def test_chemical_count(self):
-        chemical_number = self.manager.session.query(Chemical).count()
+        chemical_number = self.manager.count_chemicals()
         self.assertEqual(4, chemical_number)
 
     def test_protein_count(self):
-        protein_number = self.manager.session.query(Protein).count()
+        protein_number = self.manager.count_proteins()
         self.assertEqual(3, protein_number)
 
     def test_species_count(self):
-        species_number = self.manager.session.query(Species).count()
+        species_number = self.manager.count_species()
         self.assertEqual(18, species_number)
 
     def test_empty_pathway_chemicals(self):

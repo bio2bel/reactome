@@ -15,6 +15,8 @@ class TestModels(DatabaseMixin):
 
         cd86_uniprot = self.manager.get_protein_by_uniprot_id('A0A0G2JXF7')
 
+        self.assertIsNotNone(cd86_uniprot)
+
         self.assertEqual(
             cd86_uniprot.as_pybel_dict(),
             protein(namespace='UNIPROT', name='A0A0G2JXF7', identifier='A0A0G2JXF7')
