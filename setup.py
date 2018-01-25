@@ -13,6 +13,7 @@ INSTALL_REQUIRES = [
     'click',
     'bio2bel',
     'bio2bel_hgnc',
+    'bio2bel_chebi',
     'pybel>=0.10.1',
     'pybel-tools',
     'pybel>=0.10.1',
