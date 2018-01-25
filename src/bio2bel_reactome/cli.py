@@ -21,9 +21,9 @@ def set_debug(level):
 
 
 def set_debug_param(debug):
-    if debug == 1:
+    if debug == 0:
         set_debug(20)
-    elif debug == 2:
+    elif debug == 1:
         set_debug(10)
 
 
