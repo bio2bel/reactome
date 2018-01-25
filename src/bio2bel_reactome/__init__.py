@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+"""Bio2BEL Reactome is a package for handling Reactome in the BEL universe."""
+
+
 from .manager import Manager
 
 __version__ = '0.0.1-dev'
