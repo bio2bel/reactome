@@ -225,7 +225,7 @@ class Manager(object):
 
         for uniprot_id, reactome_id, evidence in tqdm(uniprots, desc='Loading proteins'):
             if uniprot_id is None:
-                log.warning('uniprot id is None')
+                log.warning('uniprot identifier is None')
                 continue
 
             if uniprot_id in pid_protein:
@@ -236,7 +236,7 @@ class Manager(object):
 
                 if not hgnc_info:
 
-                    log.warning('{} has no HGNC info'.format(uniprot_id))
+                    log.debug('{} has no HGNC info'.format(uniprot_id))
                     missing_hgnc_info.add(uniprot_id)
                     protein = Protein(uniprot_id=uniprot_id)
 
@@ -250,7 +250,7 @@ class Manager(object):
             pathway = self.get_pathway_by_id(reactome_id)
 
             if pathway is None:
-                log.debug('Missing reactome_id: %s', reactome_id)
+                log.debug('Missing reactome identifier: %s', reactome_id)
                 missing_reactome_ids.add(reactome_id)
                 continue
 
@@ -282,7 +282,7 @@ class Manager(object):
 
         for chebi_id, reactome_id, evidence in tqdm(chebis, desc='Loading chemicals'):
             if chebi_id is None:
-                log.warning('chebi id is None')
+                log.debug('ChEBI identifier is None')
                 continue
 
             if chebi_id in cid_chemical:

@@ -63,7 +63,7 @@ def parse_entities_pathways(entities_pathways_df, only_human=True):
     """ Parser the entity - pathway dataframe
 
     :param pandas.DataFrame entities_pathways_df: File as dataframe
-    :param Optional[bool]: parse only human entities
+    :param bool only_human: parse only human entities. Defaults to True.
     :rtype: list[tuple]
     :return Object representation dictionary (entity_id, reactome_id, evidence)
     """
