@@ -37,19 +37,19 @@ def main():
 @click.option('-v', '--debug', count=True, help="Turn on debugging.")
 @click.option('-c', '--connection', help="Defaults to {}".format(DEFAULT_CACHE_CONNECTION))
 @click.option('-d', '--delete_first', is_flag=True)
-@click.option('-only-human', '--only_human', help="Set --only_human=True to store only human proteins in the DB.")
-def populate(debug, connection, delete_first, only_human):
+@click.option('-n', '--not-only-human', is_flag=True, help="Do not only build with human")
+def populate(debug, connection, delete_first, not_only_human):
     """Build the local version of the full Reactome."""
 
     set_debug_param(debug)
 
     m = Manager(connection=connection)
 
-    if delete_first or click.confirm('Drop first the database?'):
+    if delete_first:
         m.drop_all()
         m.create_all()
 
-    m.populate(only_human=only_human)
+    m.populate(only_human=(not not_only_human))
 
 
 @main.command()
