@@ -6,12 +6,43 @@ import logging
 import time
 
 import flask_admin
-from flask import Flask
-
 from bio2bel_reactome.manager import Manager
 from bio2bel_reactome.models import *
+from flask import Flask
+from flask_admin.contrib.sqla import ModelView
 
 log = logging.getLogger(__name__)
+
+
+class PathwayView(ModelView):
+    """Pathway view in Flask-admin"""
+    column_searchable_list = (
+        Pathway.reactome_id,
+        Pathway.name,
+    )
+
+
+class ProteinView(ModelView):
+    """Protein view in Flask-admin"""
+    column_searchable_list = (
+        Protein.hgnc_symbol,
+        Protein.uniprot_id,
+        Protein.hgnc_id
+    )
+
+
+class SpeciesView(ModelView):
+    """Species view in Flask-admin"""
+    column_searchable_list = (
+        Species.name,
+    )
+
+
+class ChemicalView(ModelView):
+    """Chemical view in Flask-admin"""
+    column_searchable_list = (
+        Chemical.chebi_id,
+    )
 
 
 def add_admin(app, session, **kwargs):
