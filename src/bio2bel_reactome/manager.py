@@ -244,7 +244,7 @@ class Manager(object):
         uniprots = parse_entities_pathways(entities_pathways_df=uniprot_df, only_human=only_human)
 
         log.info("connecting to PyHGNC manager")
-        hgnc_manager = HgncManager()
+        hgnc_manager = HgncManager(connection=self.connection)
 
         log.info("populating protein data")
         pid_protein = {}
@@ -261,9 +261,9 @@ class Manager(object):
                 protein = pid_protein[uniprot_id]
             else:
 
-                hgnc_info = get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id)
+                symbol, identifier = get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id)
 
-                if not hgnc_info:
+                if not symbol:
 
                     log.debug('{} has no HGNC info'.format(uniprot_id))
                     missing_hgnc_info.add(uniprot_id)
@@ -271,7 +271,7 @@ class Manager(object):
 
                 # Human gene is stored with additional info
                 else:
-                    protein = Protein(uniprot_id=uniprot_id, hgnc_symbol=hgnc_info[0], hgnc_id=hgnc_info[1])
+                    protein = Protein(uniprot_id=uniprot_id, hgnc_symbol=str(symbol), hgnc_id=str(identifier))
 
                 pid_protein[uniprot_id] = protein
                 self.session.add(protein)
@@ -279,7 +279,7 @@ class Manager(object):
             pathway = self.get_pathway_by_id(reactome_id)
 
             if pathway is None:
-                log.debug('Missing reactome identifier: %s', reactome_id)
+                log.warning('Missing reactome identifier: %s', reactome_id)
                 missing_reactome_ids.add(reactome_id)
                 continue
 
@@ -290,6 +290,9 @@ class Manager(object):
 
         if missing_hgnc_info:
             log.warning('missing %d hgncs', len(missing_hgnc_info))
+
+        # closes the hgnc manager
+        hgnc_manager.session.close()
 
         self.session.commit()
 
@@ -341,6 +344,9 @@ class Manager(object):
 
         if missing_reactome_ids:
             log.warning('missing %d reactome ids', len(missing_reactome_ids))
+
+        # close the chebi manager
+        chebi_manager.session.close()
 
         self.session.commit()
 

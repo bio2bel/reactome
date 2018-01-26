@@ -16,6 +16,7 @@ Column 4 and 6 are redundant since Reactome ID contains all info relative to spe
 """
 
 import pandas as pd
+from bio2bel_hgnc.manager import _deal_with_nonsense
 
 from bio2bel_reactome.constants import CHEBI_PATHWAYS_URL, UNIPROT_PATHWAYS_URL
 
@@ -81,47 +82,40 @@ def parse_entities_pathways(entities_pathways_df, only_human=True):
     ]
 
 
+def get_gene_by_uniprot_id(hgnc_manager, uniprot_id):
+    """Returns the gene by uniprot identifier
+
+    :param bio2bel_hgnc.Manager hgnc_manager: Manager
+    :param str uniprot_id: UniProt identifier
+    :rtype: pyhgnc.manager.models.HGNC
+    """
+    results = hgnc_manager.hgnc(uniprotid=uniprot_id)
+
+    return _deal_with_nonsense(results)
+
+
 def get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id):
     """Returns HGNC symbol and id from PyHGNC query
 
-    :param bio2bel.hgnc.Manager HGNC manager: Manager
+    :param bio2bel_hgnc.Manager hgnc_manager: Manager
     :param str uniprot_id: UniProt identifier
     :rtype: tuple
     :return tuple with HGNC symbol and identifier
     """
 
-    query = hgnc_manager.hgnc(uniprotid=uniprot_id)
+    gene = get_gene_by_uniprot_id(hgnc_manager, uniprot_id)
 
-    if not query:
+    if not gene:
 
         # Checks if minus is part of the uniprot id -> isoform signature
-        if '-' in uniprot_id:
-            isoform = _check_uniprot_uniform(hgnc_manager, uniprot_id)
+        if '-' not in uniprot_id:
+            return None, None
 
-            if not isoform:
-                return None
+        isoform_uniprot_id = uniprot_id.split('-')[0]
 
-            return (isoform[0], isoform[0])
+        gene = get_gene_by_uniprot_id(hgnc_manager, isoform_uniprot_id)
 
-        return None
+        if not gene:
+            return None, None
 
-    return (query[0].symbol, query[0].identifier)
-
-
-def _check_uniprot_uniform(hgnc_manager, uniprot_id):
-    """Checks if the uniprot id with 'minus' corresponds to an isoform and returns the original id
-
-    :param bio2bel.hgnc.Manager HGNC manager: Manager
-    :param str uniprot_id: UniProt identifier
-    :rtype: tuple
-    :return tuple with HGNC symbol and identifier
-    """
-
-    isoform = uniprot_id.split('-')[0]
-
-    query = hgnc_manager.hgnc(uniprotid=isoform)
-
-    if not query:
-        return None
-
-    return (query[0].symbol, query[0].identifier)
+    return gene.symbol, gene.identifier

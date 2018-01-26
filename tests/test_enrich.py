@@ -4,8 +4,6 @@
 
 from tests.constants import DatabaseMixin
 
-from bio2bel_reactome.enrich import map_hgnc_node
-from bio2bel_hgnc.manager import Manager as bio2bel_hgnc_manager
 
 class TestEnrich(DatabaseMixin):
     """Tests the parsing module"""

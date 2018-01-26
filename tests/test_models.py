@@ -2,8 +2,9 @@
 
 """ This module contains the tests related to models"""
 
-from bio2bel_reactome.constants import CHEBI, HGNC
 from pybel.dsl import abundance, protein
+
+from bio2bel_reactome.constants import CHEBI
 from tests.constants import DatabaseMixin
 
 

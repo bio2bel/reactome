@@ -68,10 +68,8 @@ class TestParse(DatabaseMixin):
              }
         )
 
-    class TestChebi(DatabaseMixin):
-        """Tests accessing Chebi Manager"""
-        def test_chebi_parser(self):
-            chebi_manager = ChebiManager()
+    def test_chebi_parser(self):
+        chebi_manager = ChebiManager(connection=self.connection)
 
-            all_chemicals = chebi_manager.session.query(Chemical).all()
-            self.assertEqual(4, len(all_chemicals))
+        all_chemicals = chebi_manager.session.query(Chemical).all()
+        self.assertEqual(4, len(all_chemicals))
