@@ -1,8 +1,8 @@
 click
 pybel>=0.10.1
 sqlalchemy==1.1.15
-bio2bel_hgnc
-bio2bel_chebi
+bio2bel_hgnc>=0.0.2
+bio2bel_chebi>=0.0.2
 pandas
 tqdm
 bio2bel
