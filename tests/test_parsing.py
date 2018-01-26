@@ -2,9 +2,10 @@
 
 """ This module contains the tests related with the parsing module"""
 
-import unittest
+from bio2bel_chebi.manager import Manager as ChebiManager
+from bio2bel_chebi.models import Chemical
 
-from bio2bel_reactome.models import Pathway, Species, Chemical, Protein
+from bio2bel_reactome.models import Chemical
 from tests.constants import DatabaseMixin
 
 
@@ -66,3 +67,11 @@ class TestParse(DatabaseMixin):
              for children in parent.children
              }
         )
+
+    class TestChebi(DatabaseMixin):
+        """Tests accessing Chebi Manager"""
+        def test_chebi_parser(self):
+            chebi_manager = ChebiManager()
+
+            all_chemicals = chebi_manager.session.query(Chemical).all()
+            self.assertEqual(4, len(all_chemicals))

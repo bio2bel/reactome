@@ -68,7 +68,7 @@ def parse_entities_pathways(entities_pathways_df, only_human=True):
     :return Object representation dictionary (entity_id, reactome_id, evidence)
     """
 
-    if only_human: # TODO use pandas filtering
+    if only_human:
         return [
             (row[0], row[1], row[4])
             for _, row in entities_pathways_df.iterrows()

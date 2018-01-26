@@ -6,13 +6,15 @@ This module populates the tables of bio2bel_reactome
 
 import itertools
 import logging
-from bio2bel_hgnc.manager import Manager as HgncManager
 from collections import Counter
+
+from bio2bel.utils import get_connection
+from bio2bel_chebi.manager import Manager as ChebiManager
+from bio2bel_hgnc.manager import Manager as HgncManager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from tqdm import tqdm
 
-from bio2bel.utils import get_connection
 from bio2bel_reactome.constants import MODULE_NAME
 from bio2bel_reactome.models import Base, Chemical, Pathway, Protein, Species
 from bio2bel_reactome.parsers import *
@@ -250,6 +252,7 @@ class Manager(object):
         missing_hgnc_info = set()
 
         for uniprot_id, reactome_id, evidence in tqdm(uniprots, desc='Loading proteins'):
+
             if uniprot_id is None:
                 log.warning('uniprot identifier is None')
                 continue
@@ -302,6 +305,9 @@ class Manager(object):
         chebi_df = get_chemicals_pathways_df(url=url)
         chebis = parse_entities_pathways(entities_pathways_df=chebi_df, only_human=only_human)
 
+        log.info("connecting to CHEBI manager")
+        chebi_manager = ChebiManager(connection=self.connection)
+
         log.info("populating chemicals")
         cid_chemical = {}
         missing_reactome_ids = set()
@@ -314,7 +320,13 @@ class Manager(object):
             if chebi_id in cid_chemical:
                 chemical = cid_chemical[chebi_id]
             else:
-                chemical = Chemical(chebi_id=chebi_id)
+                chebi_chemical = chebi_manager.get_chemical_by_chebi_id(chebi_id)
+
+                if chebi_chemical is None:
+                    log.warning('{} was not found by chebi manager'.format(chebi_id))
+                    continue
+
+                chemical = Chemical(chebi_id=chebi_id, chebi_name=chebi_chemical.name)
                 cid_chemical[chebi_id] = chemical
                 self.session.add(chemical)
 

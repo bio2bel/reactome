@@ -8,7 +8,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 from bio2bel_reactome.constants import HGNC, REACTOME, CHEBI, UNIPROT
-from bio2bel_reactome.other_bio2bel_connections import chebi_id_to_name
 
 Base = declarative_base()
 
@@ -158,6 +157,7 @@ class Chemical(Base):
     id = Column(Integer, primary_key=True)
 
     chebi_id = Column(String, unique=True, nullable=False)
+    chebi_name = Column(String)
 
     def __repr__(self):
         return self.chebi_id
@@ -168,10 +168,6 @@ class Chemical(Base):
         """
         return abundance(
             namespace=CHEBI,
-            name=str(self.get_chebi_name(self.chebi_id)),
+            name=str(self.chebi_name),
             identifier=str(self.chebi_id)
         )
-
-    def get_chebi_name(self, chebi_id):
-        """Returns chebi name"""
-        return chebi_id_to_name[chebi_id]
