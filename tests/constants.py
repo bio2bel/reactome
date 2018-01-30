@@ -46,8 +46,6 @@ class DatabaseMixin(unittest.TestCase):
             hcop_file_path=hcop_test_path,
         )
 
-        hgnc_manager.session.close()
-
         """CHEBI Manager"""
 
         chebi_manager = ChebiManager(connection=cls.connection)
@@ -56,20 +54,24 @@ class DatabaseMixin(unittest.TestCase):
             url=chebi_test_path
         )
 
-        chebi_manager.session.close()
-
         # create temporary database
         cls.manager = Manager(cls.connection)
 
         """Reactome Manager"""
         # fill temporary database with test data
         cls.manager.populate(
+            hgnc_manager=hgnc_manager,
+            chebi_manager=chebi_manager,
             pathways_path=pathways,
             pathways_hierarchy_path=pathway_hierarchy,
             pathways_proteins_path=proteins_to_reactome,
             pathways_chemicals_path=chemicals_to_reactome,
             only_human=False
         )
+
+        hgnc_manager.session.close()
+        chebi_manager.session.close()
+
 
     @classmethod
     def tearDownClass(cls):

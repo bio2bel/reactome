@@ -12,7 +12,7 @@ from bio2bel.utils import get_connection
 from bio2bel_chebi.manager import Manager as ChebiManager
 from bio2bel_hgnc.manager import Manager as HgncManager
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 from tqdm import tqdm
 
 from bio2bel_reactome.constants import MODULE_NAME
@@ -27,7 +27,7 @@ class Manager(object):
         self.connection = get_connection(MODULE_NAME, connection)
         self.engine = create_engine(self.connection)
         self.session_maker = sessionmaker(bind=self.engine, autoflush=False, expire_on_commit=False)
-        self.session = self.session_maker()
+        self.session = scoped_session(self.session_maker)
         self.create_all()
 
     def create_all(self, check_first=True):
@@ -231,9 +231,10 @@ class Manager(object):
 
         self.session.commit()
 
-    def _pathway_protein(self, url=None, only_human=True):
+    def _pathway_protein(self, hgnc_manager, url=None, only_human=True):
         """Populates UniProt Tables
 
+        :param bio2bel_hgnc.manager.Manager hgnc_manager: Hgnc Manager.
         :param Optional[str] url: url from pathway protein file
         :param bool url: only_human: only store human genes. Defaults to True.
         """
@@ -242,9 +243,6 @@ class Manager(object):
 
         uniprot_df = get_proteins_pathways_df(url=url)
         uniprots = parse_entities_pathways(entities_pathways_df=uniprot_df, only_human=only_human)
-
-        log.info("connecting to PyHGNC manager")
-        hgnc_manager = HgncManager(connection=self.connection)
 
         log.info("populating protein data")
         pid_protein = {}
@@ -291,14 +289,12 @@ class Manager(object):
         if missing_hgnc_info:
             log.warning('missing %d hgncs', len(missing_hgnc_info))
 
-        # closes the hgnc manager
-        hgnc_manager.session.close()
-
         self.session.commit()
 
-    def _pathway_chemical(self, url=None, only_human=True):
+    def _pathway_chemical(self, chebi_manager, url=None, only_human=True):
         """ Populates Chebi Tables
 
+        :param bio2bel_chebi.manager.Manager chebi_manager: Chebi Manager
         :param url: Optional[str] url: url from pathway chemical file
         :param bool only_human: only store human chemicals
         """
@@ -307,9 +303,6 @@ class Manager(object):
 
         chebi_df = get_chemicals_pathways_df(url=url)
         chebis = parse_entities_pathways(entities_pathways_df=chebi_df, only_human=only_human)
-
-        log.info("connecting to CHEBI manager")
-        chebi_manager = ChebiManager(connection=self.connection)
 
         log.info("populating chemicals")
         cid_chemical = {}
@@ -345,16 +338,15 @@ class Manager(object):
         if missing_reactome_ids:
             log.warning('missing %d reactome ids', len(missing_reactome_ids))
 
-        # close the chebi manager
-        chebi_manager.session.close()
-
         self.session.commit()
 
-    def populate(self, pathways_path=None, pathways_hierarchy_path=None, pathways_proteins_path=None,
+    def populate(self, hgnc_manager=None, chebi_manager=None, pathways_path=None, pathways_hierarchy_path=None, pathways_proteins_path=None,
                  pathways_chemicals_path=None, only_human=True):
 
         """ Populates all tables
 
+        :param bio2bel_hgnc.manager.Manager hgnc_manager: Hgnc Manager
+        :param bio2bel_chebi.manager.Manager chebi_manager: Chebi Manager
         :param pathways_path: Optional[str] url: url from pathway table file
         :param pathways_hierarchy_path: Optional[str] url: url from pathway hierarchy file
         :param pathways_proteins_path: Optional[str] url: url from pathway protein file
@@ -363,5 +355,9 @@ class Manager(object):
         """
         self._populate_pathways(url=pathways_path)
         self._pathway_hierarchy(url=pathways_hierarchy_path)
-        self._pathway_protein(url=pathways_proteins_path, only_human=only_human)
-        self._pathway_chemical(url=pathways_chemicals_path, only_human=only_human)
+
+        hgnc_m = HgncManager.ensure(hgnc_manager)
+        chebi_m = ChebiManager.ensure(chebi_manager)
+
+        self._pathway_protein(hgnc_manager=hgnc_m, url=pathways_proteins_path, only_human=only_human)
+        self._pathway_chemical(chebi_manager=chebi_m,url=pathways_chemicals_path, only_human=only_human)
