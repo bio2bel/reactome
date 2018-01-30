@@ -56,7 +56,8 @@ class Pathway(Base):
         'Pathway',
         secondary=pathway_hierarchy,
         primaryjoin=(id == pathway_hierarchy.c.parent_id),
-        secondaryjoin=(id == pathway_hierarchy.c.child_id)
+        secondaryjoin=(id == pathway_hierarchy.c.child_id),
+        backref='parent'
     )
 
     species = relationship(
@@ -90,9 +91,6 @@ class Pathway(Base):
             name=str(self.name),
             identifier=str(self.reactome_id)
         )
-
-    def get_pathway_pathway_hierarchy(self):
-        NotImplemented
 
 
 class Species(Base):

@@ -14,24 +14,6 @@ from tests.constants import DatabaseMixin
 class TestGlobal(DatabaseMixin):
     """Tests the parsing module"""
 
-    # TODO: deal with other species
-    # def test_help_check_rat_cd80_model(self, model):
-    #     """Checks if the given model is CD33 (https://rgd.mcw.edu/rgdweb/report/gene/main.html?id=RGD:2314)
-    #     :param pyhgnc.manager.models.HGNC model: The result from a search of the PyHGNC database
-    #     """
-    #     self.assertEqual('2314', str(model.identifier))
-    #     self.assertEqual('Cd80', model.symbol)
-    #     self.assertEqual('Cd80 molecule', model.name)
-    #
-    # def test_uniprot_rgd_mapping(self):
-    #     """ Maps uniprot id http://www.uniprot.org/uniprot/A0A0G2K0F2 to Rat Cd80"""
-    #
-    #     cd80_uniprot = self.manager.get_protein_by_uniprot_id('A0A0G2K0F2')
-    #
-    #     cd80_hgnc = map_hgnc_node(manager=bio2bel_hgnc_manager, identifier=cd80_uniprot)
-    #
-    #     self.help_check_rat_cd80_model(cd80_hgnc)
-
     def test_get_all_human_pathways(self):
         """Checks get all human pathways"""
 
@@ -107,7 +89,7 @@ class TestGlobal(DatabaseMixin):
         self.assertIsNotNone(chemical)
         self.assertEqual(1, len(chemical.pathways))
 
-    def test_hierarchy(self):
+    def test_hierarchy_1(self):
         granfather = self.manager.get_pathway_by_id('R-HSA-388841')
         self.assertIsNotNone(granfather)
         self.assertEqual('R-HSA-389356', granfather.children[0].reactome_id)
@@ -120,6 +102,25 @@ class TestGlobal(DatabaseMixin):
              for children in parent.children
              }
         )
+
+    def test_hierarchy_2(self):
+        child = self.manager.get_pathway_by_name('CD28 dependent PI3K/Akt signaling', 'Homo sapiens')
+        self.assertIsNotNone(child, msg='Pathway not found')
+        self.assertEqual('R-HSA-389356', child.parent[0].reactome_id)
+
+    def test_get_pathway_by_name(self):
+        bos_taurus_cd29_pathway = self.manager.get_pathway_by_name('CD28 dependent PI3K/Akt signaling', 'Bos taurus')
+        self.assertIsNotNone(bos_taurus_cd29_pathway, msg='Pathway not found')
+
+        self.assertEqual('R-BTA-389357', bos_taurus_cd29_pathway.reactome_id)
+
+        sativa_cd29_pathway = self.manager.get_pathway_by_name('CD28 dependent PI3K/Akt signaling', 'Oryza sativa')
+        self.assertIsNotNone(sativa_cd29_pathway, msg='Pathway not found')
+
+        self.assertEqual('R-OSA-389357', sativa_cd29_pathway.reactome_id)
+
+        self.assertEqual(sativa_cd29_pathway.name, bos_taurus_cd29_pathway.name)
+        self.assertNotEqual(sativa_cd29_pathway.species.name, bos_taurus_cd29_pathway.species.name)
 
     def test_chebi_parser(self):
         chebi_manager = ChebiManager(connection=self.connection)

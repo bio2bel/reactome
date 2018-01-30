@@ -127,7 +127,7 @@ class Manager(object):
 
     def get_or_create_pathway(self, reactome_id, name, species):
         """Gets an pathway from the database or creates it
-        :param str reactome_id: kegg identifier
+        :param str reactome_id: pathway identifier
         :param str name: name of the pathway
         :param species bio2bel_reactome.models.Species: Species object
         :rtype: Pathway
@@ -151,6 +151,38 @@ class Manager(object):
         :rtype: Optional[Pathway]
         """
         return self.session.query(Pathway).filter(Pathway.reactome_id == reactome_id).one_or_none()
+
+    def get_pathway_by_name(self, pathway_name, species):
+        """Gets a pathway by its reactome id
+
+        :param pathway_name: name
+        :param species: name
+        :rtype: Optional[Pathway]
+        """
+        results = self.session.query(Pathway).filter(Pathway.name == pathway_name).all()
+
+        if not results:
+            return None
+
+        for pathway in results:
+
+            if pathway.species.name == species:
+                return pathway
+
+        return None
+
+    def get_pathway_parent_by_id(self, reactome_id):
+        """Gets a pathway by its reactome id
+
+        :param reactome_id: reactome identifier
+        :rtype: Optional[Pathway]
+        """
+        pathway = self.get_pathway_by_id(reactome_id)
+
+        if not pathway or pathway.parent:
+            return None
+
+        return pathway.parent
 
     def get_pathways_by_species(self, species_name):
         """Gets pathways by species"""
@@ -340,7 +372,8 @@ class Manager(object):
 
         self.session.commit()
 
-    def populate(self, hgnc_manager=None, chebi_manager=None, pathways_path=None, pathways_hierarchy_path=None, pathways_proteins_path=None,
+    def populate(self, hgnc_manager=None, chebi_manager=None, pathways_path=None, pathways_hierarchy_path=None,
+                 pathways_proteins_path=None,
                  pathways_chemicals_path=None, only_human=True):
 
         """ Populates all tables
@@ -360,4 +393,4 @@ class Manager(object):
         chebi_m = ChebiManager.ensure(chebi_manager)
 
         self._pathway_protein(hgnc_manager=hgnc_m, url=pathways_proteins_path, only_human=only_human)
-        self._pathway_chemical(chebi_manager=chebi_m,url=pathways_chemicals_path, only_human=only_human)
+        self._pathway_chemical(chebi_manager=chebi_m, url=pathways_chemicals_path, only_human=only_human)
