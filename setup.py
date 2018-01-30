@@ -12,7 +12,7 @@ META_PATH = os.path.join('src', 'bio2bel_{}'.format(BIO2BEL_MODULE), '__init__.p
 INSTALL_REQUIRES = [
     'click',
     'bio2bel',
-    'bio2bel_hgnc',
+    'bio2bel_hgnc>=0.0.4',
     'bio2bel_chebi',
     'pybel>=0.10.1',
     'pybel-tools',
