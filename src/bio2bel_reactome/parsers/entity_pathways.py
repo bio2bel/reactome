@@ -16,7 +16,6 @@ Column 4 and 6 are redundant since Reactome ID contains all info relative to spe
 """
 
 import pandas as pd
-from bio2bel_hgnc.manager import _deal_with_nonsense
 
 from bio2bel_reactome.constants import CHEBI_PATHWAYS_URL, UNIPROT_PATHWAYS_URL
 
@@ -82,40 +81,28 @@ def parse_entities_pathways(entities_pathways_df, only_human=True):
     ]
 
 
-def get_gene_by_uniprot_id(hgnc_manager, uniprot_id):
-    """Returns the gene by uniprot identifier
-
-    :param bio2bel_hgnc.Manager hgnc_manager: Manager
-    :param str uniprot_id: UniProt identifier
-    :rtype: pyhgnc.manager.models.HGNC
-    """
-    results = hgnc_manager.hgnc(uniprotid=uniprot_id)
-
-    return _deal_with_nonsense(results)
-
-
 def get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id):
     """Returns HGNC symbol and id from PyHGNC query
 
     :param bio2bel_hgnc.Manager hgnc_manager: Manager
     :param str uniprot_id: UniProt identifier
-    :rtype: tuple
-    :return tuple with HGNC symbol and identifier
+    :rtype: pyhgnc.Models.HGNC
+    :return pyHGNC model
     """
 
-    gene = get_gene_by_uniprot_id(hgnc_manager, uniprot_id)
+    gene = hgnc_manager.hgnc(uniprotid=uniprot_id)
 
     if not gene:
 
         # Checks if minus is part of the uniprot id -> isoform signature
         if '-' not in uniprot_id:
-            return None, None
+            return None
 
         isoform_uniprot_id = uniprot_id.split('-')[0]
 
-        gene = get_gene_by_uniprot_id(hgnc_manager, isoform_uniprot_id)
+        gene = hgnc_manager.hgnc(uniprotid=isoform_uniprot_id)
 
         if not gene:
-            return None, None
+            return None
 
-    return gene.symbol, gene.identifier
+    return gene

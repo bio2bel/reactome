@@ -5,7 +5,7 @@
 from pybel.dsl import bioprocess, protein, abundance
 from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 from bio2bel_reactome.constants import HGNC, REACTOME, CHEBI, UNIPROT
 
@@ -20,13 +20,6 @@ CHEMICAL_TABLE_NAME = '{}_chemical'.format(TABLE_PREFIX)
 PROTEIN_PATHWAY_TABLE = '{}_protein_pathway'.format(TABLE_PREFIX)
 CHEMICAL_PATHWAY_TABLE = '{}_chemical_pathway'.format(TABLE_PREFIX)
 SPECIES_PATHWAY_TABLE = '{}_species_pathway'.format(TABLE_PREFIX)
-
-pathway_hierarchy = Table(
-    PATHWAY_TABLE_HIERARCHY,
-    Base.metadata,
-    Column('parent_id', Integer, ForeignKey('{}.id'.format(PATHWAY_TABLE_NAME)), primary_key=True),
-    Column('child_id', Integer, ForeignKey('{}.id'.format(PATHWAY_TABLE_NAME)), primary_key=True)
-)
 
 protein_pathway = Table(
     PROTEIN_PATHWAY_TABLE,
@@ -52,13 +45,9 @@ class Pathway(Base):
     reactome_id = Column(String(255), unique=True, nullable=False)
     name = Column(String(255))
 
-    children = relationship(
-        'Pathway',
-        secondary=pathway_hierarchy,
-        primaryjoin=(id == pathway_hierarchy.c.parent_id),
-        secondaryjoin=(id == pathway_hierarchy.c.child_id),
-        backref='parent'
-    )
+    parent_id = Column(Integer, ForeignKey('{}.id'.format(PATHWAY_TABLE_NAME)))
+
+    children = relationship('Pathway', backref=backref('parent', remote_side=[id]))
 
     species = relationship(
         'Species',

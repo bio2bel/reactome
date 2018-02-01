@@ -60,11 +60,11 @@ def drop(debug, yes, connection):
     """Drop the Reactome database."""
 
     set_debug_param(debug)
-
-    if yes or click.confirm('Do you really want to delete the database?'):
-        m = Manager(connection=connection)
-        click.echo("drop db")
-        m.drop_all()
+    #
+    # if yes or click.confirm('Do you really want to delete the database?'):
+    #     m = Manager(connection=connection)
+    #     click.echo("drop db")
+    #     m.drop_all()
 
 
 @main.command()

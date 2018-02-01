@@ -31,12 +31,12 @@ class Manager(object):
         self.create_all()
 
     def create_all(self, check_first=True):
-        """Create tables"""
+        """Create tables for Bio2BEL Reactome"""
         log.info('create table in {}'.format(self.engine.url))
         Base.metadata.create_all(self.engine, checkfirst=check_first)
 
     def drop_all(self):
-        """drops all tables in the database"""
+        """drops all tables for Bio2BEL Reactome"""
         log.info('drop tables in {}'.format(self.engine.url))
         Base.metadata.drop_all(self.engine)
 
@@ -179,10 +179,28 @@ class Manager(object):
         """
         pathway = self.get_pathway_by_id(reactome_id)
 
-        if not pathway or pathway.parent:
+        if not pathway or not pathway.parent:
             return None
 
         return pathway.parent
+
+    def get_top_hiearchy_parent_by_id(self, reactome_id):
+        """Gets the oldest pathway at the top of the hierarchy a pathway by its reactome id
+
+        :param reactome_id: reactome identifier
+        :rtype: Optional[Pathway]
+        """
+
+        pathway = self.get_pathway_by_id(reactome_id)
+
+        if not pathway.parent:
+            return pathway
+
+        return self.get_top_hiearchy_parent_by_id(pathway.parent.reactome_id)
+
+    def get_top_hierarchy_pathways(self):
+        NotImplemented
+
 
     def get_pathways_by_species(self, species_name):
         """Gets pathways by species"""
@@ -291,9 +309,9 @@ class Manager(object):
                 protein = pid_protein[uniprot_id]
             else:
 
-                symbol, identifier = get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id)
+                genes = get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id)
 
-                if not symbol:
+                if not genes:
 
                     log.debug('{} has no HGNC info'.format(uniprot_id))
                     missing_hgnc_info.add(uniprot_id)
@@ -301,9 +319,10 @@ class Manager(object):
 
                 # Human gene is stored with additional info
                 else:
-                    protein = Protein(uniprot_id=uniprot_id, hgnc_symbol=str(symbol), hgnc_id=str(identifier))
+                    for gene in genes:
+                        protein = Protein(uniprot_id=uniprot_id, hgnc_symbol=gene.symbol, hgnc_id=gene.identifier)
+                        pid_protein[uniprot_id] = protein
 
-                pid_protein[uniprot_id] = protein
                 self.session.add(protein)
 
             pathway = self.get_pathway_by_id(reactome_id)

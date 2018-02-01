@@ -104,11 +104,26 @@ class TestGlobal(DatabaseMixin):
         )
 
     def test_hierarchy_2(self):
+        """Tests get pathway by name method"""
         child = self.manager.get_pathway_by_name('CD28 dependent PI3K/Akt signaling', 'Homo sapiens')
         self.assertIsNotNone(child, msg='Pathway not found')
-        self.assertEqual('R-HSA-389356', child.parent[0].reactome_id)
+        self.assertEqual('R-HSA-389356', child.parent.reactome_id)
+
+    def test_hierarchy_3(self):
+        """Tests get_pathway_parent_by_id by name method"""
+        parent = self.manager.get_pathway_parent_by_id('R-HSA-389359')
+        self.assertIsNotNone(parent, msg='Pathway not found')
+        self.assertEqual('CD28 co-stimulation', parent.name)
+
+    def test_hierarchy_4(self):
+        """Tests get top hierarchy method by finding the top member of the hierarchy"""
+        granfather = self.manager.get_top_hiearchy_parent_by_id('R-HSA-389359')
+        self.assertIsNotNone(granfather, msg='Pathway not found')
+        self.assertEqual('R-HSA-388841', granfather.reactome_id)
 
     def test_get_pathway_by_name(self):
+        """Tests get get pathway name 2"""
+
         bos_taurus_cd29_pathway = self.manager.get_pathway_by_name('CD28 dependent PI3K/Akt signaling', 'Bos taurus')
         self.assertIsNotNone(bos_taurus_cd29_pathway, msg='Pathway not found')
 
