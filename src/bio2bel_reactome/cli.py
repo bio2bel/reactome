@@ -4,13 +4,16 @@ from __future__ import print_function
 
 import logging
 import os
+import sys
 
 import click
+from pybel_tools.ols_utils import OlsNamespaceOntology
 
 from bio2bel_reactome.constants import DEFAULT_CACHE_CONNECTION
 from bio2bel_reactome.manager import Manager
 from bio2bel_reactome.to_belns import deploy_to_arty
 from bio2bel_reactome.utils import dict_to_pandas_df
+from .constants import MODULE_FUNCTION, MODULE_DOMAIN, MODULE_NAME
 
 log = logging.getLogger(__name__)
 
@@ -73,6 +76,15 @@ def drop(debug, yes, connection):
 def deploy(force):
     """Deploy to Artifactory"""
     deploy_to_arty(not force)
+
+
+@main.command()
+@click.option('-b', '--ols-base', help="Custom OLS base url")
+@click.option('-o', '--output', type=click.File('w'), default=sys.stdout)
+def write(ols_base, output):
+    """Writes BEL namespace"""
+    ontology = OlsNamespaceOntology(MODULE_NAME, MODULE_DOMAIN, bel_function=MODULE_FUNCTION, ols_base=ols_base)
+    ontology.write_namespace(output)
 
 
 @main.command()
