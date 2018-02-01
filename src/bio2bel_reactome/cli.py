@@ -22,15 +22,16 @@ def set_debug(level):
 
 def set_debug_param(debug):
     if debug == 0:
-        set_debug(20)
+        set_debug(30)
     elif debug == 1:
+        set_debug(20)
+    elif debug == 2:
         set_debug(10)
 
 
 @click.group()
 def main():
     """Reactome to BEL"""
-    logging.basicConfig(level=10, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 @main.command()
@@ -60,11 +61,11 @@ def drop(debug, yes, connection):
     """Drop the Reactome database."""
 
     set_debug_param(debug)
-    #
-    # if yes or click.confirm('Do you really want to delete the database?'):
-    #     m = Manager(connection=connection)
-    #     click.echo("drop db")
-    #     m.drop_all()
+
+    if yes or click.confirm('Do you really want to delete the database?'):
+        m = Manager(connection=connection)
+        click.echo("drop db")
+        m.drop_all()
 
 
 @main.command()
