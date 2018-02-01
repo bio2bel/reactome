@@ -30,6 +30,10 @@ class Manager(object):
         self.session = scoped_session(self.session_maker)
         self.create_all()
 
+        #Global dictionary
+        self.pid_protein = {}
+
+
     def create_all(self, check_first=True):
         """Create tables for Bio2BEL Reactome"""
         log.info('create table in {}'.format(self.engine.url))
@@ -129,7 +133,7 @@ class Manager(object):
         """Gets an pathway from the database or creates it
         :param str reactome_id: pathway identifier
         :param str name: name of the pathway
-        :param species bio2bel_reactome.models.Species: Species object
+        :param bio2bel_reactome.models.Species species: Species object
         :rtype: Pathway
         """
         pathway = self.get_pathway_by_id(reactome_id)
@@ -144,13 +148,45 @@ class Manager(object):
 
         return pathway
 
+    def get_or_create_protein(self, uniprot_id, hgnc_symbol=None, hgnc_id=None):
+        """Gets an protein from the database or creates it
+        :param str uniprot_id: pathway identifier
+        :param Optional[str] hgnc_symbol: name of the pathway
+        :param Optional[str] hgnc_id: Species object
+        :rtype: Protein
+        """
+        protein = self.get_protein_by_id(uniprot_id)
+
+        if protein is not None:
+            return protein
+
+        protein = self.pid_protein.get(uniprot_id)
+
+        if protein is not None:
+            self.session.add(protein)
+            return protein
+
+        protein = self.pid_protein[uniprot_id] = Protein(uniprot_id=uniprot_id, hgnc_symbol=hgnc_symbol, hgnc_id=hgnc_id)
+        self.session.add(protein)
+
+        return protein
+
+
     def get_pathway_by_id(self, reactome_id):
         """Gets a pathway by its reactome id
 
-        :param reactome_id: reactome identifier
+        :param str reactome_id: reactome identifier
         :rtype: Optional[Pathway]
         """
         return self.session.query(Pathway).filter(Pathway.reactome_id == reactome_id).one_or_none()
+
+    def get_protein_by_id(self, uniprot_id):
+        """Gets a protein by its UniProt id
+
+        :param str uniprot_id: UniProt identifier
+        :rtype: Optional[Protein]
+        """
+        return self.session.query(Protein).filter(Protein.uniprot_id == Protein.uniprot_id).one_or_none()
 
     def get_all_pathways(self):
         """Gets all pathways stored in the database
@@ -312,7 +348,6 @@ class Manager(object):
         uniprots = parse_entities_pathways(entities_pathways_df=uniprot_df, only_human=only_human)
 
         log.info("populating protein data")
-        pid_protein = {}
         missing_reactome_ids = set()
         missing_hgnc_info = set()
 
@@ -322,26 +357,23 @@ class Manager(object):
                 log.warning('uniprot identifier is None')
                 continue
 
-            if uniprot_id in pid_protein:
-                protein = pid_protein[uniprot_id]
+            genes = get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id)
+
+            if not genes:
+
+                log.debug('{} has no HGNC info'.format(uniprot_id))
+                missing_hgnc_info.add(uniprot_id)
+
+                protein = self.get_or_create_protein(uniprot_id=uniprot_id)
+
+            # Human gene is stored with additional info
             else:
-
-                genes = get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id)
-
-                if not genes:
-
-                    log.debug('{} has no HGNC info'.format(uniprot_id))
-                    missing_hgnc_info.add(uniprot_id)
-                    protein = Protein(uniprot_id=uniprot_id)
-                    pid_protein[uniprot_id] = protein
-
-                # Human gene is stored with additional info
-                else:
-                    for gene in genes:
-                        protein = Protein(uniprot_id=uniprot_id, hgnc_symbol=gene.symbol, hgnc_id=gene.identifier)
-                        pid_protein[uniprot_id] = protein
-
-                self.session.add(protein)
+                for gene in genes:
+                    protein = self.get_or_create_protein(
+                        uniprot_id=uniprot_id,
+                        hgnc_symbol=gene.symbol,
+                        hgnc_id=gene.identifier
+                    )
 
             pathway = self.get_pathway_by_id(reactome_id)
 

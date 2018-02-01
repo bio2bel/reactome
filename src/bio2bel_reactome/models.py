@@ -100,7 +100,7 @@ class Protein(Base):
 
     id = Column(Integer, primary_key=True)
 
-    uniprot_id = Column(String, unique=True, nullable=False)
+    uniprot_id = Column(String, unique=True, nullable=False, index=True)
 
     # Only for Human Genes
     hgnc_symbol = Column(String, nullable=True)
