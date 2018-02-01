@@ -10,11 +10,11 @@ from collections import Counter
 
 from bio2bel.utils import get_connection
 from bio2bel_chebi.manager import Manager as ChebiManager
-from bio2bel_hgnc.manager import Manager as HgncManager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from tqdm import tqdm
 
+from bio2bel_hgnc.manager import Manager as HgncManager
 from bio2bel_reactome.constants import MODULE_NAME
 from bio2bel_reactome.models import Base, Chemical, Pathway, Protein, Species
 from bio2bel_reactome.parsers import *
@@ -152,6 +152,13 @@ class Manager(object):
         """
         return self.session.query(Pathway).filter(Pathway.reactome_id == reactome_id).one_or_none()
 
+    def get_all_pathways(self):
+        """Gets all pathways stored in the database
+
+        :rtype: list[Pathway]
+        """
+        return self.session.query(Pathway).all()
+
     def get_pathway_by_name(self, pathway_name, species):
         """Gets a pathway by its reactome id
 
@@ -198,9 +205,18 @@ class Manager(object):
 
         return self.get_top_hiearchy_parent_by_id(pathway.parent.reactome_id)
 
-    def get_top_hierarchy_pathways(self):
-        NotImplemented
+    def get_all_top_hierarchy_pathways(self):
+        """Gets all pathways without a parent (top hierarchy)
 
+        :rtype: list[Pathways]
+        """
+        all_pathways = self.get_all_pathways()
+
+        return [
+            pathway
+            for pathway in all_pathways
+            if not pathway.parent_id
+        ]
 
     def get_pathways_by_species(self, species_name):
         """Gets pathways by species"""
@@ -289,7 +305,8 @@ class Manager(object):
         :param bool url: only_human: only store human genes. Defaults to True.
         """
 
-        log.info("downloading proteins. This might take a couple of minutes depending on your internet connection...")
+        log.warning(
+            "downloading proteins. This might take a couple of minutes depending on your internet connection...")
 
         uniprot_df = get_proteins_pathways_df(url=url)
         uniprots = parse_entities_pathways(entities_pathways_df=uniprot_df, only_human=only_human)
@@ -316,6 +333,7 @@ class Manager(object):
                     log.debug('{} has no HGNC info'.format(uniprot_id))
                     missing_hgnc_info.add(uniprot_id)
                     protein = Protein(uniprot_id=uniprot_id)
+                    pid_protein[uniprot_id] = protein
 
                 # Human gene is stored with additional info
                 else:
@@ -391,9 +409,16 @@ class Manager(object):
 
         self.session.commit()
 
-    def populate(self, hgnc_manager=None, chebi_manager=None, pathways_path=None, pathways_hierarchy_path=None,
-                 pathways_proteins_path=None,
-                 pathways_chemicals_path=None, only_human=True):
+    def populate(
+            self,
+            hgnc_manager=None,
+            chebi_manager=None,
+            pathways_path=None,
+            pathways_hierarchy_path=None,
+            pathways_proteins_path=None,
+            pathways_chemicals_path=None,
+            only_human=True
+    ):
 
         """ Populates all tables
 

@@ -99,7 +99,6 @@ class Protein(Base):
     __tablename__ = PROTEIN_TABLE_NAME
 
     id = Column(Integer, primary_key=True)
-    species_id = Column(Integer, ForeignKey('{}.id'.format(SPECIES_TABLE_NAME)))
 
     uniprot_id = Column(String, unique=True, nullable=False)
 
