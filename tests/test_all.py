@@ -51,6 +51,10 @@ class TestGlobal(DatabaseMixin):
         pathway_number = self.manager.count_pathways()
         self.assertEqual(21, pathway_number)
 
+    def test_get_all_pathways(self):
+        all_pathways = self.manager.get_all_pathways()
+        self.assertEqual(21, len(all_pathways))
+
     def test_chemical_count(self):
         chemical_number = self.manager.count_chemicals()
         self.assertEqual(4, chemical_number)
@@ -92,7 +96,23 @@ class TestGlobal(DatabaseMixin):
     def test_hierarchy_1(self):
         granfather = self.manager.get_pathway_by_id('R-HSA-388841')
         self.assertIsNotNone(granfather)
-        self.assertEqual('R-HSA-389356', granfather.children[0].reactome_id)
+
+        childrens = {
+            children.reactome_id
+            for children in granfather.children
+        }
+
+        self.assertEqual(
+            {'R-HSA-389356',
+             'R-ATH-389357',
+             'R-CEL-389357',
+             'R-CFA-389357',
+             'R-DRE-389357',
+             'R-DDI-389357',
+             'R-DME-389357',
+             },
+            childrens
+        )
 
         parent = self.manager.get_pathway_by_id('R-HSA-389356')
         self.assertIsNotNone(parent)
@@ -120,6 +140,12 @@ class TestGlobal(DatabaseMixin):
         granfather = self.manager.get_top_hiearchy_parent_by_id('R-HSA-389359')
         self.assertIsNotNone(granfather, msg='Pathway not found')
         self.assertEqual('R-HSA-388841', granfather.reactome_id)
+
+    def test_top_hierarchy(self):
+        """Tests get all top hierarchy members"""
+        main_pathways = self.manager.get_all_top_hierarchy_pathways()
+        # Only 12 pathways are in the highest hierarchy level
+        self.assertEqual(len(main_pathways), 12)
 
     def test_get_pathway_by_name(self):
         """Tests get get pathway name 2"""
