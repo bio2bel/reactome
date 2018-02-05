@@ -30,9 +30,8 @@ class Manager(object):
         self.session = scoped_session(self.session_maker)
         self.create_all()
 
-        #Global dictionary
+        # Global dictionary
         self.pid_protein = {}
-
 
     def create_all(self, check_first=True):
         """Create tables for Bio2BEL Reactome"""
@@ -102,10 +101,11 @@ class Manager(object):
         # Flat the pathways lists and applies Counter
         return Counter(itertools.chain(*pathways_lists))
 
-    def export_genesets(self, species=None):
+    def export_genesets(self, species=None, top_hierarchy=None):
         """Returns pathway - genesets mapping
 
         :param opt[str] species: pathways specific to a species
+        :param opt[bool] top_hierarchy: extract only the top hierarchy pathways
         :rtype: dict[set]
         :return: pathways' genesets
         """
@@ -120,7 +120,17 @@ class Manager(object):
                 if pathway.species.name == species
             }
 
-        # if no species return all
+        if top_hierarchy:
+            return {
+                pathway.name: {
+                    protein.hgnc_symbol
+                    for protein in pathway.proteins
+                }
+                for pathway in self.session.query(Pathway).all()
+                if not pathway.parent_id
+            }
+
+        # if no species and not top hierarchy return all
         return {
             pathway.name: {
                 protein.hgnc_symbol
@@ -166,11 +176,11 @@ class Manager(object):
             self.session.add(protein)
             return protein
 
-        protein = self.pid_protein[uniprot_id] = Protein(uniprot_id=uniprot_id, hgnc_symbol=hgnc_symbol, hgnc_id=hgnc_id)
+        protein = self.pid_protein[uniprot_id] = Protein(uniprot_id=uniprot_id, hgnc_symbol=hgnc_symbol,
+                                                         hgnc_id=hgnc_id)
         self.session.add(protein)
 
         return protein
-
 
     def get_pathway_by_id(self, reactome_id):
         """Gets a pathway by its reactome id

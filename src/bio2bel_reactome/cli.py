@@ -90,17 +90,18 @@ def write(ols_base, output):
 @main.command()
 @click.option('-c', '--connection', help="Defaults to {}".format(DEFAULT_CACHE_CONNECTION))
 @click.option('-species', '--species', help="Specific species ex: --species='Homo sapiens'")
-def export(connection, species):
+@click.option('-hierarchy', '--top-hierarchy',is_flag=True, help="Extract only the highest level in the hierarchy")
+def export(connection, species, top_hierarchy):
     """Export all pathway - gene info to a excel file"""
     m = Manager(connection=connection)
 
     log.info("Querying the database")
 
-    genesets = dict_to_pandas_df(m.export_genesets(species=species))
+    genesets = dict_to_pandas_df(m.export_genesets(species=species, top_hierarchy=top_hierarchy))
 
-    log.info("Geneset exported to '{}/genesets.csv'".format(os.getcwd()))
+    log.info("Geneset exported to '{}/reactome_gene_sets.csv'".format(os.getcwd()))
 
-    genesets.to_csv('genesets.csv', index=False)
+    genesets.to_csv('reactome_gene_sets.csv', index=False)
 
 
 @main.command()
