@@ -21,8 +21,12 @@ from bio2bel_reactome.parsers import *
 
 log = logging.getLogger(__name__)
 
+__all__ = [
+    'Manager'
+]
 
 class Manager(object):
+    """Database manager"""
     def __init__(self, connection=None):
         self.connection = get_connection(MODULE_NAME, connection)
         self.engine = create_engine(self.connection)
