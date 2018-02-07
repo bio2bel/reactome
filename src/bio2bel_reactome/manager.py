@@ -25,8 +25,10 @@ __all__ = [
     'Manager'
 ]
 
+
 class Manager(object):
     """Database manager"""
+
     def __init__(self, connection=None):
         self.connection = get_connection(MODULE_NAME, connection)
         self.engine = create_engine(self.connection)
@@ -162,6 +164,14 @@ class Manager(object):
 
         return pathway
 
+    def query_pathway_by_name(self, query):
+        """Returns all pathways having the query in their names
+
+        :param query: query string
+        :rtype: list[Pathway]
+        """
+        return self.session.query(Pathway).filter(Pathway.name.contains(query)).all()
+
     def get_or_create_protein(self, uniprot_id, hgnc_symbol=None, hgnc_id=None):
         """Gets an protein from the database or creates it
         :param str uniprot_id: pathway identifier
@@ -180,8 +190,11 @@ class Manager(object):
             self.session.add(protein)
             return protein
 
-        protein = self.pid_protein[uniprot_id] = Protein(uniprot_id=uniprot_id, hgnc_symbol=hgnc_symbol,
-                                                         hgnc_id=hgnc_id)
+        protein = self.pid_protein[uniprot_id] = Protein(
+            uniprot_id=uniprot_id,
+            hgnc_symbol=hgnc_symbol,
+            hgnc_id=hgnc_id
+        )
         self.session.add(protein)
 
         return protein

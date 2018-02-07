@@ -1,5 +1,5 @@
-Bio2BEL GO
-==========
+Bio2BEL Reactome
+================
 .. automodule:: bio2bel_reactome
 
 .. toctree::
@@ -9,6 +9,9 @@ Bio2BEL GO
    enrichment
    manager
    constants
+   models
+   web
+   utils
 
 Indices and tables
 ==================
