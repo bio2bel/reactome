@@ -164,13 +164,20 @@ class Manager(object):
 
         return pathway
 
-    def query_pathway_by_name(self, query):
+    def query_pathway_by_name(self, query, limit=None):
         """Returns all pathways having the query in their names
 
         :param query: query string
+        :param Optional[int] limit: limit result query
         :rtype: list[Pathway]
         """
-        return self.session.query(Pathway).filter(Pathway.name.contains(query)).all()
+
+        q = self.session.query(Pathway).filter(Pathway.name.contains(query))
+
+        if limit:
+            q = q.limit(limit)
+
+        return q.all()
 
     def get_or_create_protein(self, uniprot_id, hgnc_symbol=None, hgnc_id=None):
         """Gets an protein from the database or creates it
