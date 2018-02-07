@@ -229,17 +229,20 @@ class Manager(object):
         """
         return self.session.query(Pathway).all()
 
-    def get_pathway_by_name(self, pathway_name, species):
+    def get_pathway_by_name(self, pathway_name, species=None):
         """Gets a pathway by its reactome id
 
         :param pathway_name: name
-        :param species: name
+        :param Optional[str] species: name
         :rtype: Optional[Pathway]
         """
         results = self.session.query(Pathway).filter(Pathway.name == pathway_name).all()
 
         if not results:
             return None
+
+        if not species:
+            species = 'Homo sapiens'
 
         for pathway in results:
 
