@@ -229,6 +229,35 @@ class Manager(object):
         """
         return self.session.query(Pathway).all()
 
+    def get_pathway_by_species(self, only_human=True):
+        """Gets a pathway by its reactome id
+
+        :param bool url: only_human: only human pathways. Defaults to True.
+        :rtype: Protein
+        """
+        pathways = self.session.query(Pathway)
+
+        if only_human:
+            pathways = pathways.filter(Pathway.species == 'Homo sapiens')
+
+        return pathways.all()
+
+    def get_pathway_size_distribution(self, only_human=True):
+        """Returns pathway sizes
+
+        :param bool url: only_human: only human pathways. Defaults to True.
+        :rtype: list
+        :return: pathway sizes
+        """
+
+        pathways = self.get_pathways_by_species(only_human)
+
+        return [
+            len(pathway.proteins)
+            for pathway in pathways
+            if pathway.proteins
+        ]
+
     def get_pathway_by_name(self, pathway_name, species=None):
         """Gets a pathway by its reactome id
 
