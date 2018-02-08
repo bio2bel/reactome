@@ -256,17 +256,17 @@ class Manager(object):
         """Returns pathway sizes
 
         :param bool url: only_human: only human pathways. Defaults to True.
-        :rtype: list
+        :rtype: dict
         :return: pathway sizes
         """
 
         pathways = self.get_pathways_by_species('Homo sapiens')
 
-        return [
-            len(pathway.proteins)
+        return {
+            pathway.name: len(pathway.proteins)
             for pathway in pathways
             if pathway.proteins
-        ]
+        }
 
     def get_pathway_by_name(self, pathway_name, species=None):
         """Gets a pathway by its reactome id
