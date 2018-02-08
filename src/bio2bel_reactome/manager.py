@@ -164,6 +164,21 @@ class Manager(object):
 
         return pathway
 
+    def get_or_create_species(self, species_name):
+        """Gets an Species from the database or creates it
+        :param str species_name: name
+        :rtype: Species
+        """
+        species = self.get_species_by_name(species_name)
+
+        if species is None:
+            species = Species(
+                name=species_name,
+            )
+            self.session.add(species)
+
+        return species
+
     def query_pathway_by_name(self, query, limit=None):
         """Returns all pathways having the query in their names
 
@@ -214,6 +229,14 @@ class Manager(object):
         """
         return self.session.query(Pathway).filter(Pathway.reactome_id == reactome_id).one_or_none()
 
+    def get_species_by_name(self, species_name):
+        """Gets a Species by its species_name
+
+        :param str species_name: name
+        :rtype: Optional[Species]
+        """
+        return self.session.query(Species).filter(Species.name == species_name).one_or_none()
+
     def get_protein_by_id(self, uniprot_id):
         """Gets a protein by its UniProt id
 
@@ -229,20 +252,7 @@ class Manager(object):
         """
         return self.session.query(Pathway).all()
 
-    def get_pathway_by_species(self, only_human=True):
-        """Gets a pathway by its reactome id
-
-        :param bool url: only_human: only human pathways. Defaults to True.
-        :rtype: Protein
-        """
-        pathways = self.session.query(Pathway)
-
-        if only_human:
-            pathways = pathways.filter(Pathway.species == 'Homo sapiens')
-
-        return pathways.all()
-
-    def get_pathway_size_distribution(self, only_human=True):
+    def get_pathway_size_distribution(self):
         """Returns pathway sizes
 
         :param bool url: only_human: only human pathways. Defaults to True.
@@ -250,7 +260,7 @@ class Manager(object):
         :return: pathway sizes
         """
 
-        pathways = self.get_pathways_by_species(only_human)
+        pathways = self.get_pathways_by_species('Homo sapiens')
 
         return [
             len(pathway.proteins)
@@ -353,11 +363,7 @@ class Manager(object):
         log.info("populating species")
 
         for species_name in tqdm(species_set, desc='Loading species'):
-            new_species = Species(
-                name=species_name,
-            )
-
-            self.session.add(new_species)
+            new_species = self.get_or_create_species(species_name)
             species_name_to_model[species_name] = new_species
 
         log.info("populating pathways")
