@@ -101,7 +101,7 @@ def export(connection, species, top_hierarchy):
 
     log.info("Geneset exported to '{}/reactome_gene_sets.csv'".format(os.getcwd()))
 
-    genesets.to_csv('reactome_gene_sets.csv', index=False)
+    genesets.to_excel('reactome_gene_sets.xlsx', index=False)
 
 
 @main.command()
