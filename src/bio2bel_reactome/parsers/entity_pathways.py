@@ -16,7 +16,7 @@ Column 4 and 6 are redundant since Reactome ID contains all info relative to spe
 """
 
 import pandas as pd
-
+import logging
 from bio2bel_reactome.constants import CHEBI_PATHWAYS_URL, UNIPROT_PATHWAYS_URL
 
 __all__ = [
@@ -25,6 +25,8 @@ __all__ = [
     'parse_entities_pathways',
     'get_hgnc_symbol_id_by_uniprot_id',
 ]
+
+log = logging.getLogger(__name__)
 
 
 def _get_data_helper(default_url, url=None):
@@ -67,8 +69,9 @@ def parse_entities_pathways(entities_pathways_df, only_human=True):
     :rtype: list[tuple]
     :return Object representation dictionary (entity_id, reactome_id, evidence)
     """
-
     if only_human:
+        log.info('only importing human pathways')
+
         return [
             (row[0], row[1], row[4])
             for _, row in entities_pathways_df.iterrows()
@@ -86,10 +89,8 @@ def get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id):
 
     :param bio2bel_hgnc.Manager hgnc_manager: Manager
     :param str uniprot_id: UniProt identifier
-    :rtype: pyhgnc.Models.HGNC
-    :return pyHGNC model
+    :rtype: Optional[pyhgnc.models.HGNC]
     """
-
     gene = hgnc_manager.hgnc(uniprotid=uniprot_id)
 
     if not gene:
