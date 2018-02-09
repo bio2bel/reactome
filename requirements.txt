@@ -5,6 +5,7 @@ bio2bel_hgnc>=0.0.4
 bio2bel_chebi>=0.0.4
 pandas
 tqdm
+openpyxl
 bio2bel
 flask[web]
 flask_admin[web]
