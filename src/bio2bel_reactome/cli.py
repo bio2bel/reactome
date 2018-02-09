@@ -7,13 +7,13 @@ import os
 import sys
 
 import click
-from pybel_tools.ols_utils import OlsNamespaceOntology
 
 from bio2bel_reactome.constants import DEFAULT_CACHE_CONNECTION
 from bio2bel_reactome.manager import Manager
 from bio2bel_reactome.to_belns import deploy_to_arty
 from bio2bel_reactome.utils import dict_to_pandas_df
-from .constants import MODULE_FUNCTION, MODULE_DOMAIN, MODULE_NAME
+from pybel_tools.ols_utils import OlsNamespaceOntology
+from .constants import MODULE_DOMAIN, MODULE_FUNCTION, MODULE_NAME
 
 log = logging.getLogger(__name__)
 
@@ -90,7 +90,7 @@ def write(ols_base, output):
 @main.command()
 @click.option('-c', '--connection', help="Defaults to {}".format(DEFAULT_CACHE_CONNECTION))
 @click.option('-species', '--species', help="Specific species ex: --species='Homo sapiens'")
-@click.option('-hierarchy', '--top-hierarchy',is_flag=True, help="Extract only the highest level in the hierarchy")
+@click.option('-hierarchy', '--top-hierarchy', is_flag=True, help="Extract only the highest level in the hierarchy")
 def export(connection, species, top_hierarchy):
     """Export all pathway - gene info to a excel file"""
     m = Manager(connection=connection)
@@ -107,14 +107,15 @@ def export(connection, species, top_hierarchy):
 @main.command()
 @click.option('-v', '--debug', count=True, help="Turn on debugging.")
 @click.option('-c', '--connection', help="Defaults to {}".format(DEFAULT_CACHE_CONNECTION))
-def web(debug, connection):
+@click.option('-p', '--port', type=int)
+@click.option('-h', '--host')
+def web(debug, connection, port, host):
     """Run web"""
-
     set_debug_param(debug)
 
     from bio2bel_reactome.web import create_app
-    app = create_app(connection=connection)
-    app.run(host='0.0.0.0', port=5000)
+    app = create_app(connection=connection, url='/')
+    app.run(host=host, port=port)
 
 
 if __name__ == '__main__':

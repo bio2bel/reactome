@@ -6,10 +6,11 @@ import logging
 import time
 
 import flask_admin
-from bio2bel_reactome.manager import Manager
-from bio2bel_reactome.models import *
 from flask import Flask
 from flask_admin.contrib.sqla import ModelView
+
+from bio2bel_reactome.manager import Manager
+from bio2bel_reactome.models import *
 
 log = logging.getLogger(__name__)
 
@@ -58,6 +59,7 @@ def create_app(connection=None, url=None):
     """Creates a Flask application
 
     :type connection: Optional[str]
+    :type url: Optional[str]
     :rtype: flask.Flask
     """
 
