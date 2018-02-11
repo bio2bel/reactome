@@ -252,6 +252,7 @@ class Manager(object):
         """
         return self.session.query(Pathway).all()
 
+
     def get_all_hgnc_symbols(self):
         """Returns the set of genes present in all Reactome Pathways
 
@@ -259,7 +260,7 @@ class Manager(object):
         """
         return {
             gene.hgnc_symbol
-            for pathway in self.get_all_pathways()
+            for pathway in self.get_pathways_by_species('Homo sapiens')
             for gene in pathway.proteins
             if pathway.proteins
         }
