@@ -32,9 +32,9 @@ def set_debug_param(debug):
         set_debug(10)
 
 
-@click.group()
+@click.group(help='Convert Reactome to BEL. Default connection at {}'.format(DEFAULT_CACHE_CONNECTION))
 def main():
-    """Reactome to BEL"""
+    pass
 
 
 @main.command()
