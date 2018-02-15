@@ -2,12 +2,12 @@
 
 """Reactome database model"""
 
-from pybel.dsl import bioprocess, protein, abundance
 from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import backref, relationship
 
-from bio2bel_reactome.constants import HGNC, REACTOME, CHEBI, UNIPROT
+from bio2bel_reactome.constants import CHEBI, HGNC, REACTOME, UNIPROT
+from pybel.dsl import abundance, bioprocess, protein
 
 Base = declarative_base()
 
@@ -100,11 +100,11 @@ class Protein(Base):
 
     id = Column(Integer, primary_key=True)
 
-    uniprot_id = Column(String, unique=True, nullable=False, index=True)
+    uniprot_id = Column(String(64), unique=True, nullable=False, index=True)
 
     # Only for Human Genes
-    hgnc_symbol = Column(String, nullable=True)
-    hgnc_id = Column(String, nullable=True)
+    hgnc_symbol = Column(String(64), nullable=True)
+    hgnc_id = Column(String(64), nullable=True)
 
     def __repr__(self):
         return self.uniprot_id
@@ -117,15 +117,15 @@ class Protein(Base):
         if self.hgnc_symbol and self.hgnc_id:
             return protein(
                 namespace=HGNC,
-                name=self.hgnc_symbol,
-                identifier=self.hgnc_id
+                name=str(self.hgnc_symbol),
+                identifier=str(self.hgnc_id)
             )
 
         else:
             return protein(
                 namespace=UNIPROT,
-                name=self.uniprot_id,
-                identifier=self.uniprot_id
+                name=str(self.uniprot_id),
+                identifier=str(self.uniprot_id)
             )
 
     def get_pathways(self):
@@ -142,8 +142,8 @@ class Chemical(Base):
 
     id = Column(Integer, primary_key=True)
 
-    chebi_id = Column(String, unique=True, nullable=False)
-    chebi_name = Column(String)
+    chebi_id = Column(String(64), unique=True, nullable=False)
+    chebi_name = Column(String(4096))
 
     def __repr__(self):
         return self.chebi_id
