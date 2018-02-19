@@ -62,12 +62,11 @@ def create_app(connection=None, url=None):
     :type url: Optional[str]
     :rtype: flask.Flask
     """
-
     t = time.time()
 
     app = Flask(__name__)
 
-    manager = Manager(connection=connection)
+    manager = Manager.ensure(connection=connection)
     add_admin(app, manager.session, url=url)
 
     log.info('Done building %s in %.2f seconds', app, time.time() - t)
