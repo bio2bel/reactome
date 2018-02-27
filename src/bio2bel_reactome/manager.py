@@ -545,7 +545,8 @@ class Manager(object):
                 missing_reactome_ids.add(reactome_id)
                 continue
 
-            chemical.pathways.append(pathway)
+            if pathway not in chemical.pathways:
+                chemical.pathways.append(pathway)
 
         if missing_reactome_ids:
             log.warning('missing %d reactome ids', len(missing_reactome_ids))
