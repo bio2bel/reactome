@@ -2,12 +2,12 @@
 
 """Reactome database model"""
 
+from pybel.dsl import abundance, bioprocess, protein
 from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import backref, relationship
 
 from bio2bel_reactome.constants import CHEBI, HGNC, REACTOME, UNIPROT
-from pybel.dsl import abundance, bioprocess, protein
 
 Base = declarative_base()
 
@@ -31,8 +31,8 @@ protein_pathway = Table(
 chemical_pathway = Table(
     CHEMICAL_PATHWAY_TABLE,
     Base.metadata,
-    Column('chemical_id', Integer, ForeignKey('{}.id'.format(CHEMICAL_TABLE_NAME))),
-    Column('pathway_id', Integer, ForeignKey('{}.id'.format(PATHWAY_TABLE_NAME)))
+    Column('chemical_id', Integer, ForeignKey('{}.id'.format(CHEMICAL_TABLE_NAME)), primary_key=True),
+    Column('pathway_id', Integer, ForeignKey('{}.id'.format(PATHWAY_TABLE_NAME)), primary_key=True)
 )
 
 
