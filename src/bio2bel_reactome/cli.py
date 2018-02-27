@@ -43,7 +43,7 @@ def main():
 @click.option('-d', '--reset-db', default=True)
 @click.option('-n', '--not-only-human', is_flag=True, help="Do not only build with human")
 def populate(debug, connection, reset_db, not_only_human):
-    """Build the local version of the full Reactome."""
+    """Build the local version of Reactome."""
 
     set_debug_param(debug)
 
