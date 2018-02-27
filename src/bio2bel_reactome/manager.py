@@ -438,7 +438,8 @@ class Manager(object):
         """
 
         log.warning(
-            "downloading proteins. This might take a couple of minutes depending on your internet connection...")
+            "downloading proteins. This might take a couple of minutes depending on your internet connection..."
+        )
 
         uniprot_df = get_proteins_pathways_df(url=url)
         uniprots = parse_entities_pathways(entities_pathways_df=uniprot_df, only_human=only_human)
@@ -450,7 +451,7 @@ class Manager(object):
         for uniprot_id, reactome_id, evidence in tqdm(uniprots, desc='Loading proteins'):
 
             if uniprot_id is None:
-                log.warning('uniprot identifier is None')
+                log.warning('Uniprot identifier is None')
                 continue
 
             genes = get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id)
@@ -479,6 +480,7 @@ class Manager(object):
                 continue
 
             protein.pathways.append(pathway)
+            self.session.commit()
 
         if missing_reactome_ids:
             log.warning('missing %d reactome ids', len(missing_reactome_ids))
@@ -486,7 +488,6 @@ class Manager(object):
         if missing_hgnc_info:
             log.warning('missing %d hgncs', len(missing_hgnc_info))
 
-        self.session.commit()
 
     def _pathway_chemical(self, chebi_manager, url=None, only_human=True):
         """ Populates Chebi Tables

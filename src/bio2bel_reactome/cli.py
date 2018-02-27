@@ -99,7 +99,7 @@ def export(connection, species, top_hierarchy):
 
     genesets = dict_to_pandas_df(m.export_genesets(species=species, top_hierarchy=top_hierarchy))
 
-    log.info("Geneset exported to '{}/reactome_gene_sets.csv'".format(os.getcwd()))
+    log.info("Geneset exported to '{}/reactome_gene_sets.xlsx'".format(os.getcwd()))
 
     genesets.to_excel('reactome_gene_sets.xlsx', index=False)
 
