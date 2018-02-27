@@ -21,9 +21,9 @@ Functionalities and Commands
 ----------------------------
 Following, the main functionalities and commands to work with this package:
 
-1. Populate local database with Reactome info :code:`python3 -m bio2bel_reactome populate`
-2. Run an admin site for simple querying and exploration:code:`python3 -m bio2bel_reactome web` (http://localhost:5000/admin/)
-3. Export gene sets for programmatic use :code:`python3 -m bio2bel_reactome export`
+- Populate local database with Reactome info :code:`python3 -m bio2bel_reactome populate`
+- Run an admin site for simple querying and exploration:code:`python3 -m bio2bel_reactome web` (http://localhost:5000/admin/)
+- Export gene sets for programmatic use :code:`python3 -m bio2bel_reactome export`
 
 Citation
 --------
