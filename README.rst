@@ -14,8 +14,8 @@ Note that the two following resources should be installed and loaded in order to
 
 These two resources will be installed together with this package and can be quickly loaded by running the following commands in your terminal:
 
-1. :code:`python3 -m bio2bel_hgnc populate`
-2. :code:`python3 -m bio2bel_chebi populate`
+- :code:`python3 -m bio2bel_hgnc populate`
+- :code:`python3 -m bio2bel_chebi populate`
 
 Functionalities and Commands
 ----------------------------
