@@ -243,7 +243,7 @@ class Manager(object):
         :param str uniprot_id: UniProt identifier
         :rtype: Optional[Protein]
         """
-        return self.session.query(Protein).filter(Protein.uniprot_id == Protein.uniprot_id).one_or_none()
+        return self.session.query(Protein).filter(Protein.uniprot_id == uniprot_id).one_or_none()
 
     def get_all_pathways(self):
         """Gets all pathways stored in the database
@@ -480,7 +480,7 @@ class Manager(object):
                 continue
 
             protein.pathways.append(pathway)
-            self.session.commit()
+        self.session.commit()
 
         if missing_reactome_ids:
             log.warning('missing %d reactome ids', len(missing_reactome_ids))
