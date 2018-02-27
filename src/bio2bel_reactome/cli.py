@@ -7,12 +7,12 @@ import os
 import sys
 
 import click
+from pybel_tools.ols_utils import OlsNamespaceOntology
 
 from bio2bel_reactome.constants import DEFAULT_CACHE_CONNECTION
 from bio2bel_reactome.manager import Manager
 from bio2bel_reactome.to_belns import deploy_to_arty
 from bio2bel_reactome.utils import dict_to_pandas_df
-from pybel_tools.ols_utils import OlsNamespaceOntology
 from .constants import MODULE_DOMAIN, MODULE_FUNCTION, MODULE_NAME
 
 log = logging.getLogger(__name__)
@@ -40,17 +40,19 @@ def main():
 @main.command()
 @click.option('-v', '--debug', count=True, help="Turn on debugging.")
 @click.option('-c', '--connection', help="Defaults to {}".format(DEFAULT_CACHE_CONNECTION))
-@click.option('-d', '--delete_first', is_flag=True)
+@click.option('-d', '--reset-db', default=True)
 @click.option('-n', '--not-only-human', is_flag=True, help="Do not only build with human")
-def populate(debug, connection, delete_first, not_only_human):
+def populate(debug, connection, reset_db, not_only_human):
     """Build the local version of the full Reactome."""
 
     set_debug_param(debug)
 
     m = Manager(connection=connection)
 
-    if delete_first:
+    if reset_db is True:
+        log.info('Deleting the previous instance of the database')
         m.drop_all()
+        log.info('Creating new models')
         m.create_all()
 
     m.populate(only_human=(not not_only_human))

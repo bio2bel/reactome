@@ -8,12 +8,12 @@ import itertools
 import logging
 from collections import Counter
 
-from bio2bel.utils import get_connection
-from bio2bel_chebi.manager import Manager as ChebiManager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from tqdm import tqdm
 
+from bio2bel.utils import get_connection
+from bio2bel_chebi.manager import Manager as ChebiManager
 from bio2bel_hgnc.manager import Manager as HgncManager
 from bio2bel_reactome.constants import MODULE_NAME
 from bio2bel_reactome.models import Base, Chemical, Pathway, Protein, Species
@@ -147,6 +147,7 @@ class Manager(object):
 
     def get_or_create_pathway(self, reactome_id, name, species):
         """Gets an pathway from the database or creates it
+
         :param str reactome_id: pathway identifier
         :param str name: name of the pathway
         :param bio2bel_reactome.models.Species species: Species object
@@ -164,8 +165,28 @@ class Manager(object):
 
         return pathway
 
+    def get_or_create_chemical(self, chebi_id, chebi_name):
+        """Gets a Chemical from the database or creates it
+
+        :param str chebi_id: identifier
+        :param str chebi_name: name
+        :rtype: Chemical
+        """
+        chemical = self.get_chemical_by_chebi_id(chebi_id)
+
+        if chemical is None:
+            chemical = Chemical(
+                chebi_id=chebi_id,
+                chebi_name=chebi_name
+            )
+
+            self.session.add(chemical)
+
+        return chemical
+
     def get_or_create_species(self, species_name):
         """Gets an Species from the database or creates it
+
         :param str species_name: name
         :rtype: Species
         """
@@ -201,7 +222,7 @@ class Manager(object):
         :param Optional[str] hgnc_id: Species object
         :rtype: Protein
         """
-        protein = self.get_protein_by_id(uniprot_id)
+        protein = self.get_protein_by_uniprot_id(uniprot_id)
 
         if protein is not None:
             return protein
@@ -236,14 +257,6 @@ class Manager(object):
         :rtype: Optional[Species]
         """
         return self.session.query(Species).filter(Species.name == species_name).one_or_none()
-
-    def get_protein_by_id(self, uniprot_id):
-        """Gets a protein by its UniProt id
-
-        :param str uniprot_id: UniProt identifier
-        :rtype: Optional[Protein]
-        """
-        return self.session.query(Protein).filter(Protein.uniprot_id == uniprot_id).one_or_none()
 
     def get_all_pathways(self):
         """Gets all pathways stored in the database
@@ -479,7 +492,9 @@ class Manager(object):
                 missing_reactome_ids.add(reactome_id)
                 continue
 
-            protein.pathways.append(pathway)
+            if pathway not in protein.pathways:
+                protein.pathways.append(pathway)
+
         self.session.commit()
 
         if missing_reactome_ids:
@@ -487,7 +502,6 @@ class Manager(object):
 
         if missing_hgnc_info:
             log.warning('missing %d hgncs', len(missing_hgnc_info))
-
 
     def _pathway_chemical(self, chebi_manager, url=None, only_human=True):
         """ Populates Chebi Tables
@@ -513,6 +527,7 @@ class Manager(object):
 
             if chebi_id in cid_chemical:
                 chemical = cid_chemical[chebi_id]
+
             else:
                 chebi_chemical = chebi_manager.get_chemical_by_chebi_id(chebi_id)
 
@@ -520,9 +535,8 @@ class Manager(object):
                     log.warning('{} was not found by chebi manager'.format(chebi_id))
                     continue
 
-                chemical = Chemical(chebi_id=chebi_id, chebi_name=chebi_chemical.name)
+                chemical = self.get_or_create_chemical(chebi_id, chebi_chemical.name)
                 cid_chemical[chebi_id] = chemical
-                self.session.add(chemical)
 
             pathway = self.get_pathway_by_id(reactome_id)
 
