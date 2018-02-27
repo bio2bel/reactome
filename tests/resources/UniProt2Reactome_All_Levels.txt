@@ -1,3 +1,7 @@
 A0A0G2JXF7	R-RNO-389357	http://reactome.org/PathwayBrowser/#/R-RNO-389357	CD28 dependent PI3K/Akt signaling	IEA	Rattus norvegicus
 A0A0G2K0F2	R-RNO-389357	http://reactome.org/PathwayBrowser/#/R-RNO-389357	CD28 dependent PI3K/Akt signaling	IEA	Rattus norvegicus
 A0A0G2K344	R-RNO-389357	http://reactome.org/PathwayBrowser/#/R-RNO-389357	CD28 dependent PI3K/Akt signaling	IEA	Rattus norvegicus
+P08237	R-RNO-389357	http://reactome.org/PathwayBrowser/#/R-RNO-389357	CD28 dependent PI3K/Akt signaling	Homo sapiens
+P08237	R-HSA-389356	http://reactome.org/PathwayBrowser/#/R-HSA-389356	CD28 co-stimulation	Homo sapiens
+P08237	R-HSA-389359	http://reactome.org/PathwayBrowser/#/R-HSA-389359	CD28 dependent Vav1 pathway	Homo sapiens
+

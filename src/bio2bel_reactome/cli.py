@@ -116,7 +116,7 @@ def web(debug, connection, port, host):
     set_debug_param(debug)
 
     from bio2bel_reactome.web import create_app
-    app = create_app(connection=connection, url='/')
+    app = create_app(connection=connection)
     app.run(host=host, port=port)
 
 

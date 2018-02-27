@@ -2,10 +2,10 @@
 
 """ This module contains the tests related with the graph enrichment"""
 
-from bio2bel_chebi.manager import Manager as ChebiManager
-from bio2bel_chebi.models import Chemical
 from pybel.dsl import abundance, protein
 
+from bio2bel_chebi.manager import Manager as ChebiManager
+from bio2bel_chebi.models import Chemical
 from bio2bel_reactome.constants import CHEBI
 from bio2bel_reactome.models import Chemical
 from tests.constants import DatabaseMixin
@@ -61,11 +61,18 @@ class TestGlobal(DatabaseMixin):
 
     def test_protein_count(self):
         protein_number = self.manager.count_proteins()
-        self.assertEqual(3, protein_number)
+        self.assertEqual(4, protein_number)
 
     def test_species_count(self):
         species_number = self.manager.count_species()
         self.assertEqual(18, species_number)
+
+    def test_protein_1(self):
+        """Test protein relationships"""
+
+        protein = self.manager.get_protein_by_uniprot_id('P08237')
+        self.assertIsNotNone(protein, 'Protein not found')
+        self.assertEqual(3, len(protein.pathways))
 
     def test_empty_pathway_chemicals(self):
         pathway = self.manager.get_pathway_by_id('R-DME-389357')
