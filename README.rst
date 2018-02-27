@@ -1,6 +1,7 @@
 Bio2BEL Reactome |build| |coverage| |docs|
 ==========================================
-This package converts Reactome to BEL. So far, exporting the pathway namespace has been implemented.
+This package allows the enrichment of BEL networks with Reactome information by wrapping its RESTful API.
+Furthermore, it is integrated in the `ComPath environment <https://github.com/ComPath>`_ for pathway database comparison.
 
 Installation
 ------------
@@ -11,15 +12,18 @@ Note that the two following resources should be installed and loaded in order to
 - `Bio2BEL CHEBI <https://github.com/bio2bel/chebi>`_
 - `Bio2BEL HGNC <https://github.com/bio2bel/hgnc>`_
 
-These two resources will be installed together with this package and can be quickly loaded by running the following commands:
+These two resources will be installed together with this package and can be quickly loaded by running the following commands in your terminal:
 
 1. :code:`python3 -m bio2bel_hgnc populate`
 2. :code:`python3 -m bio2bel_chebi populate`
 
+Functionalities and Commands
+----------------------------
+Following, the main functionalities and commands to work with this package:
 
-Creating a Local Copy of the Namespace
---------------------------------------
-A BEL namespace can be generated with :code:`python3 -m bio2bel_reactome write -o ~/Downloads/reactome.belns`
+1. Populate local database with Reactome info :code:`python3 -m bio2bel_reactome populate`
+2. Run an admin site for simple querying and exploration:code:`python3 -m bio2bel_reactome web` (http://localhost:5000/admin/)
+3. Export gene sets for programmatic use :code:`python3 -m bio2bel_reactome export`
 
 Citation
 --------
