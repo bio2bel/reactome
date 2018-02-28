@@ -93,14 +93,14 @@ class Manager(object):
     def query_gene_set(self, gene_set):
         """Returns pathway counter dictionary
 
-        :param gene_set: gene set to be queried
-        :rtype: dict
-        :return: Counter dictionary
+        :param list[str] gene_set: gene set to be queried
+        :rtype: dict[str,tuple[int,int]]
+        :return: Enriched pathways with mapped pathways/total
         """
-        proteins = self.session.query(Protein).filter(Protein.hgnc_symbol.in_(gene_set)).all()
+        proteins = self._query_proteins_in_hgnc_list(gene_set)
 
         pathways_lists = [
-            protein.get_pathways()
+            protein.get_pathways_ids()
             for protein in proteins
         ]
 
@@ -108,9 +108,18 @@ class Manager(object):
         pathway_counter = Counter(itertools.chain(*pathways_lists))
 
         return {
-            pathway_reactome_id: [proteins_mapped, len(self.get_pathway_by_id(pathway_reactome_id).get_gene_set())]
+            pathway_reactome_id: (proteins_mapped, len(self.get_pathway_by_id(pathway_reactome_id).get_gene_set()))
             for pathway_reactome_id, proteins_mapped in pathway_counter.items()
         }
+
+    def _query_proteins_in_hgnc_list(self, gene_set):
+        """Returns the proteins in the database within the gene set query
+
+        :param list[str] gene_set: hgnc symbol lists
+        :rtype: list[bio2bel_reactome.models.Protein]
+        :return: list of proteins
+        """
+        return self.session.query(Protein).filter(Protein.hgnc_symbol.in_(gene_set)).all()
 
     def export_genesets(self, species=None, top_hierarchy=None):
         """Returns pathway - genesets mapping

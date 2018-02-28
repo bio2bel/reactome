@@ -139,7 +139,7 @@ class Protein(Base):
                 identifier=str(self.uniprot_id)
             )
 
-    def get_pathways(self):
+    def get_pathways_ids(self):
         """Returns the pathways associated with the protein"""
         return {
             pathway.reactome_id
