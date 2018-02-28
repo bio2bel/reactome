@@ -183,9 +183,9 @@ class TestGlobal(DatabaseMixin):
 
         self.assertEqual(
             {
-                'R-HSA-389359': [1, 7],
-                'R-HSA-389356': [1, 3],
-                'R-RNO-389357': [1, 3]
+                'R-HSA-389359': (1, 7),
+                'R-HSA-389356': (1, 3),
+                'R-RNO-389357': (1, 3)
             },
             enriched_pathways
         )
@@ -197,9 +197,9 @@ class TestGlobal(DatabaseMixin):
 
         self.assertEqual(
             {
-                'R-HSA-389359': [2, 7],
-                'R-HSA-389356': [1, 3],
-                'R-RNO-389357': [1, 3]
+                'R-HSA-389359': (2, 7),
+                'R-HSA-389356': (1, 3),
+                'R-RNO-389357': (1, 3)
             },
             enriched_pathways
         )
@@ -211,9 +211,9 @@ class TestGlobal(DatabaseMixin):
 
         self.assertEqual(
             {
-                'R-HSA-389359': [2, 7],
-                'R-HSA-389356': [2, 3],
-                'R-RNO-389357': [1, 3]
+                'R-HSA-389359': (2, 7),
+                'R-HSA-389356': (2, 3),
+                'R-RNO-389357': (1, 3)
             },
             enriched_pathways
         )
