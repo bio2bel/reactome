@@ -7,7 +7,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import backref, relationship
 
-from bio2bel_reactome.constants import CHEBI, HGNC, REACTOME, UNIPROT
+from .constants import CHEBI, HGNC, REACTOME, UNIPROT
 
 Base = declarative_base()
 
@@ -81,6 +81,17 @@ class Pathway(Base):
             identifier=str(self.reactome_id)
         )
 
+    def get_gene_set(self):
+        """Returns the genes associated with the pathway (gene set). Note this function restricts to HGNC symbols genes
+
+        :rtype: set[bio2bel_reactome.models.Protein]
+        """
+        return {
+            protein
+            for protein in self.proteins
+            if protein.hgnc_symbol
+        }
+
 
 class Species(Base):
     """Species Table"""
@@ -131,7 +142,7 @@ class Protein(Base):
     def get_pathways(self):
         """Returns the pathways associated with the protein"""
         return {
-            pathway.name
+            pathway.reactome_id
             for pathway in self.pathways
         }
 

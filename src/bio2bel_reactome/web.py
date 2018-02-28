@@ -9,8 +9,8 @@ import flask_admin
 from flask import Flask
 from flask_admin.contrib.sqla import ModelView
 
-from bio2bel_reactome.manager import Manager
-from bio2bel_reactome.models import *
+from .manager import Manager
+from .models import *
 
 log = logging.getLogger(__name__)
 

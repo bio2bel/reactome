@@ -15,9 +15,9 @@ from tqdm import tqdm
 from bio2bel.utils import get_connection
 from bio2bel_chebi.manager import Manager as ChebiManager
 from bio2bel_hgnc.manager import Manager as HgncManager
-from bio2bel_reactome.constants import MODULE_NAME
-from bio2bel_reactome.models import Base, Chemical, Pathway, Protein, Species
-from bio2bel_reactome.parsers import *
+from .constants import MODULE_NAME
+from .models import Base, Chemical, Pathway, Protein, Species
+from .parsers import *
 
 log = logging.getLogger(__name__)
 
@@ -104,8 +104,13 @@ class Manager(object):
             for protein in proteins
         ]
 
-        # Flat the pathways lists and applies Counter
-        return Counter(itertools.chain(*pathways_lists))
+        # Flat the pathways lists and applies Counter to get the number matches in every mapped pathway
+        pathway_counter = Counter(itertools.chain(*pathways_lists))
+
+        return {
+            pathway_reactome_id: [proteins_mapped, len(self.get_pathway_by_id(pathway_reactome_id).get_gene_set())]
+            for pathway_reactome_id, proteins_mapped in pathway_counter.items()
+        }
 
     def export_genesets(self, species=None, top_hierarchy=None):
         """Returns pathway - genesets mapping
@@ -306,7 +311,7 @@ class Manager(object):
         }
 
     def get_pathway_by_name(self, pathway_name, species=None):
-        """Gets a pathway by its reactome id
+        """Gets a pathway by name
 
         :param pathway_name: name
         :param Optional[str] species: name
@@ -328,7 +333,7 @@ class Manager(object):
         return None
 
     def get_pathway_parent_by_id(self, reactome_id):
-        """Gets a pathway by its reactome id
+        """Gets parent pathway by its reactome id
 
         :param reactome_id: reactome identifier
         :rtype: Optional[Pathway]
