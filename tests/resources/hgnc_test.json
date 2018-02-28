@@ -1341,6 +1341,78 @@
           7758956
         ],
         "location_sortable": "02p11.2"
+      },
+      {
+        "symbol": "HGNC_SYMBOL_1",
+        "uniprot_ids": [
+          "HGNC_SYMBOL_1"
+        ],
+        "hgnc_id": "10000",
+        "name": "Gene 1",
+        "status": "NA",
+        "uuid": "NA1",
+        "locus_group": "NA",
+        "locus_type": "NA"
+      },
+      {
+        "symbol": "HGNC_SYMBOL_2",
+        "uniprot_ids": [
+          "HGNC_SYMBOL_2"
+        ],
+        "hgnc_id": "20000",
+        "name": "Gene 2",
+        "status": "NA",
+        "uuid": "NA2",
+        "locus_group": "NA",
+        "locus_type": "NA"
+      },
+      {
+        "symbol": "HGNC_SYMBOL_3",
+        "uniprot_ids": [
+          "HGNC_SYMBOL_3"
+        ],
+        "hgnc_id": "30000",
+        "name": "Gene 3",
+        "status": "NA",
+        "uuid": "NA3",
+        "locus_group": "NA",
+        "locus_type": "NA"
+      },
+      {
+        "symbol": "HGNC_SYMBOL_4",
+        "uniprot_ids": [
+          "HGNC_SYMBOL_4"
+        ],
+        "hgnc_id": "400000",
+        "name": "Gene 4",
+        "status": "NA",
+        "uuid": "NA4",
+        "locus_group": "NA",
+        "locus_type": "NA"
+      },
+      {
+        "symbol": "HGNC_SYMBOL_5",
+        "uniprot_ids": [
+          "HGNC_SYMBOL_5"
+        ],
+        "hgnc_id": "500000",
+        "name": "Gene 5",
+        "status": "NA",
+        "uuid": "NA5",
+        "locus_group": "NA",
+        "locus_type": "NA"
+      },
+      {
+        "symbol": "HGNC_SYMBOL_6",
+        "uniprot_ids": [
+          "HGNC_SYMBOL_6"
+        ],
+        "hgnc_id": "60000",
+        "name": "Gene 6",
+        "status": "NA",
+        "uuid": "NA6",
+        "locus_group": "NA",
+        "locus_type": "NA"
       }
     ]
   }

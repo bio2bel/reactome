@@ -61,7 +61,7 @@ class TestGlobal(DatabaseMixin):
 
     def test_protein_count(self):
         protein_number = self.manager.count_proteins()
-        self.assertEqual(4, protein_number)
+        self.assertEqual(10, protein_number)
 
     def test_species_count(self):
         species_number = self.manager.count_species()
@@ -175,3 +175,43 @@ class TestGlobal(DatabaseMixin):
 
         all_chemicals = chebi_manager.session.query(Chemical).all()
         self.assertEqual(4, len(all_chemicals))
+
+    def test_gene_query_1(self):
+        """Single protein query. This protein is associated with 3 pathways"""
+        enriched_pathways = self.manager.query_gene_set(['HGNC_SYMBOL_3'])
+        self.assertIsNotNone(enriched_pathways, msg='Enriching function is not working')
+
+        self.assertEqual(
+            {
+                'R-HSA-389359': [1, 7],
+                'R-HSA-389356': [1, 3],
+                'R-RNO-389357': [1, 3]
+            },
+            enriched_pathways
+        )
+
+    def test_gene_query_2(self):
+        enriched_pathways = self.manager.query_gene_set(['HGNC_SYMBOL_3','HGNC_SYMBOL_5'])
+        self.assertIsNotNone(enriched_pathways, msg='Enriching function is not working')
+
+        self.assertEqual(
+            {
+                'R-HSA-389359': [2, 7],
+                'R-HSA-389356': [1, 3],
+                'R-RNO-389357': [1, 3]
+            },
+            enriched_pathways
+        )
+
+    def test_gene_query_3(self):
+        enriched_pathways = self.manager.query_gene_set(['HGNC_SYMBOL_3','HGNC_SYMBOL_1'])
+        self.assertIsNotNone(enriched_pathways, msg='Enriching function is not working')
+
+        self.assertEqual(
+            {
+                'R-HSA-389359': [2, 7],
+                'R-HSA-389356': [2, 3],
+                'R-RNO-389357': [1, 3]
+            },
+            enriched_pathways
+        )
