@@ -191,6 +191,7 @@ class TestGlobal(DatabaseMixin):
         )
 
     def test_gene_query_2(self):
+        """Multiple protein query"""
         enriched_pathways = self.manager.query_gene_set(['HGNC_SYMBOL_3','HGNC_SYMBOL_5'])
         self.assertIsNotNone(enriched_pathways, msg='Enriching function is not working')
 
@@ -204,6 +205,7 @@ class TestGlobal(DatabaseMixin):
         )
 
     def test_gene_query_3(self):
+        """Multiple protein query"""
         enriched_pathways = self.manager.query_gene_set(['HGNC_SYMBOL_3','HGNC_SYMBOL_1'])
         self.assertIsNotNone(enriched_pathways, msg='Enriching function is not working')
 
