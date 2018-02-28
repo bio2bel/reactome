@@ -231,6 +231,7 @@ class Manager(object):
 
     def get_or_create_protein(self, uniprot_id, hgnc_symbol=None, hgnc_id=None):
         """Gets an protein from the database or creates it
+
         :param str uniprot_id: pathway identifier
         :param Optional[str] hgnc_symbol: name of the pathway
         :param Optional[str] hgnc_id: Species object
