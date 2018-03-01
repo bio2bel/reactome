@@ -8,6 +8,7 @@ Bio2BEL Reactome
 
    enrichment
    manager
+   cli
    constants
    models
    web
