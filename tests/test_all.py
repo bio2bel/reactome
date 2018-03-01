@@ -183,37 +183,82 @@ class TestGlobal(DatabaseMixin):
 
         self.assertEqual(
             {
-                'R-HSA-389359': (1, 7),
-                'R-HSA-389356': (1, 3),
-                'R-RNO-389357': (1, 3)
+                {
+                    "pathway_id": "R-HSA-389359",
+                    "pathway_name": "CD28 dependent Vav1 pathway",
+                    "mapped_proteins": 1,
+                    "pathway_size": 7,
+                },
+                {
+                    "pathway_id": "R-HSA-389356",
+                    "pathway_name": "CD28 co-stimulation",
+                    "mapped_proteins": 1,
+                    "pathway_size": 3,
+                },
+                {
+                    "pathway_id": "R-RNO-389357",
+                    "pathway_name": "CD28 dependent PI3K/Akt signaling",
+                    "mapped_proteins": 1,
+                    "pathway_size": 3,
+                }
             },
             enriched_pathways
         )
 
     def test_gene_query_2(self):
         """Multiple protein query"""
-        enriched_pathways = self.manager.query_gene_set(['HGNC_SYMBOL_3','HGNC_SYMBOL_5'])
+        enriched_pathways = self.manager.query_gene_set(['HGNC_SYMBOL_3', 'HGNC_SYMBOL_5'])
         self.assertIsNotNone(enriched_pathways, msg='Enriching function is not working')
 
         self.assertEqual(
             {
-                'R-HSA-389359': (2, 7),
-                'R-HSA-389356': (1, 3),
-                'R-RNO-389357': (1, 3)
+                {
+                    "pathway_id": "R-HSA-389359",
+                    "pathway_name": "CD28 dependent Vav1 pathway",
+                    "mapped_proteins": 2,
+                    "pathway_size": 7,
+                },
+                {
+                    "pathway_id": "R-HSA-389356",
+                    "pathway_name": "CD28 co-stimulation",
+                    "mapped_proteins": 1,
+                    "pathway_size": 3,
+                },
+                {
+                    "pathway_id": "R-RNO-389357",
+                    "pathway_name": "CD28 dependent PI3K/Akt signaling",
+                    "mapped_proteins": 1,
+                    "pathway_size": 3,
+                }
             },
             enriched_pathways
         )
 
     def test_gene_query_3(self):
         """Multiple protein query"""
-        enriched_pathways = self.manager.query_gene_set(['HGNC_SYMBOL_3','HGNC_SYMBOL_1'])
+        enriched_pathways = self.manager.query_gene_set(['HGNC_SYMBOL_3', 'HGNC_SYMBOL_1'])
         self.assertIsNotNone(enriched_pathways, msg='Enriching function is not working')
 
         self.assertEqual(
             {
-                'R-HSA-389359': (2, 7),
-                'R-HSA-389356': (2, 3),
-                'R-RNO-389357': (1, 3)
+                {
+                    "pathway_id": "R-HSA-389359",
+                    "pathway_name": "CD28 dependent Vav1 pathway",
+                    "mapped_proteins": 2,
+                    "pathway_size": 7,
+                },
+                {
+                    "pathway_id": "R-HSA-389356",
+                    "pathway_name": "CD28 co-stimulation",
+                    "mapped_proteins": 2,
+                    "pathway_size": 3,
+                },
+                {
+                    "pathway_id": "R-RNO-389357",
+                    "pathway_name": "CD28 dependent PI3K/Akt signaling",
+                    "mapped_proteins": 1,
+                    "pathway_size": 3,
+                }
             },
             enriched_pathways
         )
