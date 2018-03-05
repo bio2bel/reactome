@@ -9,11 +9,10 @@ import sys
 import click
 from pybel_tools.ols_utils import OlsNamespaceOntology
 
-from bio2bel_reactome.constants import DEFAULT_CACHE_CONNECTION
-from bio2bel_reactome.manager import Manager
-from bio2bel_reactome.to_belns import deploy_to_arty
-from bio2bel_reactome.utils import dict_to_pandas_df
-from .constants import MODULE_DOMAIN, MODULE_FUNCTION, MODULE_NAME
+from .constants import DEFAULT_CACHE_CONNECTION, MODULE_DOMAIN, MODULE_FUNCTION, MODULE_NAME
+from .manager import Manager
+from .to_belns import deploy_to_arty
+from .utils import dict_to_pandas_df
 
 log = logging.getLogger(__name__)
 
