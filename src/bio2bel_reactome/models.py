@@ -92,6 +92,10 @@ class Pathway(Base):
             if protein.hgnc_symbol
         }
 
+    @property
+    def url(self):
+        return 'https://reactome.org/content/detail/{}'.format(self.reactome_id)
+
 
 class Species(Base):
     """Species Table"""
