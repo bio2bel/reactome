@@ -187,6 +187,7 @@ class TestGlobal(DatabaseMixin):
                 "pathway_name": "CD28 dependent Vav1 pathway",
                 "mapped_proteins": 1,
                 "pathway_size": 7,
+                "pathway_gene_set": {}
             },
             enriched_pathways["R-HSA-389359"]
         )
@@ -197,6 +198,7 @@ class TestGlobal(DatabaseMixin):
                 "pathway_name": "CD28 dependent PI3K/Akt signaling",
                 "mapped_proteins": 1,
                 "pathway_size": 3,
+                "pathway_gene_set": {}
             },
             enriched_pathways["R-RNO-389357"]
         )
@@ -207,6 +209,7 @@ class TestGlobal(DatabaseMixin):
                 "pathway_name": "CD28 co-stimulation",
                 "mapped_proteins": 1,
                 "pathway_size": 3,
+                "pathway_gene_set": {}
             },
             enriched_pathways["R-HSA-389356"]
         )
@@ -222,6 +225,7 @@ class TestGlobal(DatabaseMixin):
                 "pathway_name": "CD28 dependent PI3K/Akt signaling",
                 "mapped_proteins": 1,
                 "pathway_size": 3,
+                "pathway_gene_set": {'HGNC_SYMBOL_3', 'PFKM', 'HGNC_SYMBOL_2'}
             },
             enriched_pathways["R-RNO-389357"]
         )
@@ -232,6 +236,7 @@ class TestGlobal(DatabaseMixin):
                 "pathway_name": "CD28 co-stimulation",
                 "mapped_proteins": 1,
                 "pathway_size": 3,
+                "pathway_gene_set": {}
             },
             enriched_pathways["R-HSA-389356"]
         )
@@ -242,6 +247,15 @@ class TestGlobal(DatabaseMixin):
                 "pathway_name": "CD28 dependent Vav1 pathway",
                 "mapped_proteins": 2,
                 "pathway_size": 7,
+                "pathway_gene_set": {
+                    'HGNC_SYMBOL_1',
+                    'HGNC_SYMBOL_2',
+                    'HGNC_SYMBOL_3',
+                    'HGNC_SYMBOL_4',
+                    'HGNC_SYMBOL_5',
+                    'HGNC_SYMBOL_6',
+                    'PFKM'
+                }
             },
             enriched_pathways["R-HSA-389359"]
         )
@@ -257,6 +271,7 @@ class TestGlobal(DatabaseMixin):
                 "pathway_name": "CD28 dependent PI3K/Akt signaling",
                 "mapped_proteins": 1,
                 "pathway_size": 3,
+                "pathway_gene_set": {'HGNC_SYMBOL_3', 'PFKM', 'HGNC_SYMBOL_2'}
             },
             enriched_pathways["R-RNO-389357"]
         )
@@ -267,6 +282,7 @@ class TestGlobal(DatabaseMixin):
                 "pathway_name": "CD28 co-stimulation",
                 "mapped_proteins": 2,
                 "pathway_size": 3,
+                "pathway_gene_set": {}
             },
             enriched_pathways["R-HSA-389356"]
         )
@@ -277,6 +293,15 @@ class TestGlobal(DatabaseMixin):
                 "pathway_name": "CD28 dependent Vav1 pathway",
                 "mapped_proteins": 2,
                 "pathway_size": 7,
+                "pathway_gene_set": {
+                    'HGNC_SYMBOL_1',
+                    'HGNC_SYMBOL_2',
+                    'HGNC_SYMBOL_3',
+                    'HGNC_SYMBOL_4',
+                    'HGNC_SYMBOL_5',
+                    'HGNC_SYMBOL_6',
+                    'PFKM'
+                }
             },
             enriched_pathways["R-HSA-389359"]
         )
