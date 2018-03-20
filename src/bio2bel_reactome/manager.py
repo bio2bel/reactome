@@ -114,8 +114,8 @@ class Manager(object):
 
             pathway_gene_set = pathway.get_gene_set()  # Pathway gene set
 
-            enrichment_results[pathway.kegg_id] = {
-                "pathway_id": pathway.kegg_id,
+            enrichment_results[pathway.reactome_id] = {
+                "pathway_id": pathway.reactome_id,
                 "pathway_name": pathway.name,
                 "mapped_proteins": proteins_mapped,
                 "pathway_size": len(pathway_gene_set),
