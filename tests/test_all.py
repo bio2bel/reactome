@@ -188,7 +188,7 @@ class TestGlobal(DatabaseMixin):
                 "mapped_proteins": 1,
                 "pathway_size": 7,
             },
-            enriched_pathways
+            enriched_pathways["R-HSA-389359"]
         )
 
         self.assertIn(
@@ -198,7 +198,7 @@ class TestGlobal(DatabaseMixin):
                 "mapped_proteins": 1,
                 "pathway_size": 3,
             },
-            enriched_pathways
+            enriched_pathways["R-RNO-389357"]
         )
 
         self.assertIn(
@@ -208,7 +208,7 @@ class TestGlobal(DatabaseMixin):
                 "mapped_proteins": 1,
                 "pathway_size": 3,
             },
-            enriched_pathways
+            enriched_pathways["R-HSA-389356"]
         )
 
     def test_gene_query_2(self):
@@ -223,7 +223,7 @@ class TestGlobal(DatabaseMixin):
                 "mapped_proteins": 1,
                 "pathway_size": 3,
             },
-            enriched_pathways
+            enriched_pathways["R-RNO-389357"]
         )
 
         self.assertIn(
@@ -233,7 +233,7 @@ class TestGlobal(DatabaseMixin):
                 "mapped_proteins": 1,
                 "pathway_size": 3,
             },
-            enriched_pathways
+            enriched_pathways["R-HSA-389356"]
         )
 
         self.assertIn(
@@ -243,7 +243,7 @@ class TestGlobal(DatabaseMixin):
                 "mapped_proteins": 2,
                 "pathway_size": 7,
             },
-            enriched_pathways
+            enriched_pathways["R-HSA-389359"]
         )
 
     def test_gene_query_3(self):
@@ -258,7 +258,7 @@ class TestGlobal(DatabaseMixin):
                 "mapped_proteins": 1,
                 "pathway_size": 3,
             },
-            enriched_pathways
+            enriched_pathways["R-RNO-389357"]
         )
 
         self.assertIn(
@@ -268,7 +268,7 @@ class TestGlobal(DatabaseMixin):
                 "mapped_proteins": 2,
                 "pathway_size": 3,
             },
-            enriched_pathways
+            enriched_pathways["R-HSA-389356"]
         )
 
         self.assertIn(
@@ -278,5 +278,5 @@ class TestGlobal(DatabaseMixin):
                 "mapped_proteins": 2,
                 "pathway_size": 7,
             },
-            enriched_pathways
+            enriched_pathways["R-HSA-389359"]
         )
