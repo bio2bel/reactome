@@ -181,7 +181,7 @@ class TestGlobal(DatabaseMixin):
         enriched_pathways = self.manager.query_gene_set(['HGNC_SYMBOL_3'])
         self.assertIsNotNone(enriched_pathways, msg='Enriching function is not working')
 
-        self.assertIn(
+        self.assertEqual(
             {
                 "pathway_id": "R-HSA-389359",
                 "pathway_name": "CD28 dependent Vav1 pathway",
@@ -191,7 +191,7 @@ class TestGlobal(DatabaseMixin):
             enriched_pathways["R-HSA-389359"]
         )
 
-        self.assertIn(
+        self.assertEqual(
             {
                 "pathway_id": "R-RNO-389357",
                 "pathway_name": "CD28 dependent PI3K/Akt signaling",
@@ -201,7 +201,7 @@ class TestGlobal(DatabaseMixin):
             enriched_pathways["R-RNO-389357"]
         )
 
-        self.assertIn(
+        self.assertEqual(
             {
                 "pathway_id": "R-HSA-389356",
                 "pathway_name": "CD28 co-stimulation",
@@ -216,7 +216,7 @@ class TestGlobal(DatabaseMixin):
         enriched_pathways = self.manager.query_gene_set(['HGNC_SYMBOL_3', 'HGNC_SYMBOL_5'])
         self.assertIsNotNone(enriched_pathways, msg='Enriching function is not working')
 
-        self.assertIn(
+        self.assertEqual(
             {
                 "pathway_id": "R-RNO-389357",
                 "pathway_name": "CD28 dependent PI3K/Akt signaling",
@@ -226,7 +226,7 @@ class TestGlobal(DatabaseMixin):
             enriched_pathways["R-RNO-389357"]
         )
 
-        self.assertIn(
+        self.assertEqual(
             {
                 "pathway_id": "R-HSA-389356",
                 "pathway_name": "CD28 co-stimulation",
@@ -236,7 +236,7 @@ class TestGlobal(DatabaseMixin):
             enriched_pathways["R-HSA-389356"]
         )
 
-        self.assertIn(
+        self.assertEqual(
             {
                 "pathway_id": "R-HSA-389359",
                 "pathway_name": "CD28 dependent Vav1 pathway",
@@ -251,7 +251,7 @@ class TestGlobal(DatabaseMixin):
         enriched_pathways = self.manager.query_gene_set(['HGNC_SYMBOL_3', 'HGNC_SYMBOL_1'])
         self.assertIsNotNone(enriched_pathways, msg='Enriching function is not working')
 
-        self.assertIn(
+        self.assertEqual(
             {
                 "pathway_id": "R-RNO-389357",
                 "pathway_name": "CD28 dependent PI3K/Akt signaling",
@@ -261,7 +261,7 @@ class TestGlobal(DatabaseMixin):
             enriched_pathways["R-RNO-389357"]
         )
 
-        self.assertIn(
+        self.assertEqual(
             {
                 "pathway_id": "R-HSA-389356",
                 "pathway_name": "CD28 co-stimulation",
@@ -271,7 +271,7 @@ class TestGlobal(DatabaseMixin):
             enriched_pathways["R-HSA-389356"]
         )
 
-        self.assertIn(
+        self.assertEqual(
             {
                 "pathway_id": "R-HSA-389359",
                 "pathway_name": "CD28 dependent Vav1 pathway",
