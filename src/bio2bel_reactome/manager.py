@@ -29,6 +29,8 @@ __all__ = [
 class Manager(object):
     """Database manager"""
 
+    has_hierarchy = True # Indicates that this manager can handle hierarchies with the Pathway Model
+
     def __init__(self, connection=None):
         self.connection = get_connection(MODULE_NAME, connection)
         self.engine = create_engine(self.connection)
