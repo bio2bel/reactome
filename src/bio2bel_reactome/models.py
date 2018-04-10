@@ -93,6 +93,10 @@ class Pathway(Base):
         }
 
     @property
+    def resource_id(self):
+        return self.reactome_id
+
+    @property
     def url(self):
         return 'https://reactome.org/content/detail/{}'.format(self.reactome_id)
 
