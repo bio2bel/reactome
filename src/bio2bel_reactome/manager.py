@@ -8,13 +8,12 @@ import itertools as itt
 import logging
 from collections import Counter
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session
 from tqdm import tqdm
 
-from bio2bel.utils import get_connection
+from bio2bel import bio2bel_populater
 from bio2bel_chebi.manager import Manager as ChebiManager
 from bio2bel_hgnc.manager import Manager as HgncManager
+from compath_utils import CompathManager
 from .constants import MODULE_NAME
 from .models import Base, Chemical, Pathway, Protein, Species
 from .parsers import *
@@ -26,41 +25,24 @@ __all__ = [
 ]
 
 
-class Manager(object):
+class Manager(CompathManager):
     """Database manager"""
+    module_name = MODULE_NAME
+    pathway_model = Pathway
+    protein_model = Protein
+    pathway_model_identifier_column = Pathway.reactome_id
 
-    has_hierarchy = True # Indicates that this manager can handle hierarchies with the Pathway Model
+    has_hierarchy = True  # Indicates that this manager can handle hierarchies with the Pathway Model
 
     def __init__(self, connection=None):
-        self.connection = get_connection(MODULE_NAME, connection)
-        self.engine = create_engine(self.connection)
-        self.session_maker = sessionmaker(bind=self.engine, autoflush=False, expire_on_commit=False)
-        self.session = scoped_session(self.session_maker)
-        self.create_all()
+        super().__init__(connection=connection)
 
         # Global dictionary
         self.pid_protein = {}
 
-    def create_all(self, check_first=True):
-        """Create tables for Bio2BEL Reactome"""
-        log.info('create table in {}'.format(self.engine.url))
-        Base.metadata.create_all(self.engine, checkfirst=check_first)
-
-    def drop_all(self):
-        """drops all tables for Bio2BEL Reactome"""
-        log.info('drop tables in {}'.format(self.engine.url))
-        Base.metadata.drop_all(self.engine)
-
-    @staticmethod
-    def ensure(connection=None):
-        """Checks and allows for a Manager to be passed to the function. """
-        if connection is None or isinstance(connection, str):
-            return Manager(connection=connection)
-
-        if isinstance(connection, Manager):
-            return connection
-
-        raise TypeError
+    @property
+    def base(self):
+        return Base
 
     def count_pathways(self):
         """Counts the pathways in the database
@@ -125,15 +107,6 @@ class Manager(object):
             }
 
         return enrichment_results
-
-    def _query_proteins_in_hgnc_list(self, gene_set):
-        """Returns the proteins in the database within the gene set query
-
-        :param list[str] gene_set: hgnc symbol lists
-        :rtype: list[bio2bel_reactome.models.Protein]
-        :return: list of proteins
-        """
-        return self.session.query(Protein).filter(Protein.hgnc_symbol.in_(gene_set)).all()
 
     def export_genesets(self, species=None, top_hierarchy=None):
         """Returns pathway - genesets mapping
@@ -228,21 +201,6 @@ class Manager(object):
 
         return species
 
-    def query_pathway_by_name(self, query, limit=None):
-        """Returns all pathways having the query in their names
-
-        :param query: query string
-        :param Optional[int] limit: limit result query
-        :rtype: list[Pathway]
-        """
-
-        q = self.session.query(Pathway).filter(Pathway.name.contains(query))
-
-        if limit:
-            q = q.limit(limit)
-
-        return q.all()
-
     def get_or_create_protein(self, uniprot_id, hgnc_symbol=None, hgnc_id=None):
         """Gets an protein from the database or creates it
 
@@ -271,14 +229,6 @@ class Manager(object):
 
         return protein
 
-    def get_pathway_by_id(self, reactome_id):
-        """Gets a pathway by its reactome id
-
-        :param str reactome_id: reactome identifier
-        :rtype: Optional[Pathway]
-        """
-        return self.session.query(Pathway).filter(Pathway.reactome_id == reactome_id).one_or_none()
-
     def get_species_by_name(self, species_name):
         """Gets a Species by its species_name
 
@@ -286,13 +236,6 @@ class Manager(object):
         :rtype: Optional[Species]
         """
         return self.session.query(Species).filter(Species.name == species_name).one_or_none()
-
-    def get_all_pathways(self):
-        """Gets all pathways stored in the database
-
-        :rtype: list[Pathway]
-        """
-        return self.session.query(Pathway).all()
 
     def get_pathway_names_to_ids(self):
         """Returns a dictionary of pathway names to ids
@@ -321,7 +264,6 @@ class Manager(object):
     def get_pathway_size_distribution(self):
         """Returns pathway sizes
 
-        :param bool url: only_human: only human pathways. Defaults to True.
         :rtype: dict
         :return: pathway sizes
         """
@@ -600,6 +542,7 @@ class Manager(object):
 
         self.session.commit()
 
+    @bio2bel_populater(MODULE_NAME)
     def populate(
             self,
             hgnc_manager=None,
@@ -629,3 +572,41 @@ class Manager(object):
 
         self._pathway_protein(hgnc_manager=hgnc_m, url=pathways_proteins_path, only_human=only_human)
         self._pathway_chemical(chebi_manager=chebi_m, url=pathways_chemicals_path, only_human=only_human)
+
+    def _add_admin(self, app, **kwargs):
+        from flask_admin import Admin
+        from flask_admin.contrib.sqla import ModelView
+
+        class PathwayView(ModelView):
+            """Pathway view in Flask-admin"""
+            column_searchable_list = (
+                Pathway.reactome_id,
+                Pathway.name,
+            )
+
+        class ProteinView(ModelView):
+            """Protein view in Flask-admin"""
+            column_searchable_list = (
+                Protein.hgnc_symbol,
+                Protein.uniprot_id,
+                Protein.hgnc_id
+            )
+
+        class SpeciesView(ModelView):
+            """Species view in Flask-admin"""
+            column_searchable_list = (
+                Species.name,
+            )
+
+        class ChemicalView(ModelView):
+            """Chemical view in Flask-admin"""
+            column_searchable_list = (
+                Chemical.chebi_id,
+            )
+
+        admin = Admin(app, **kwargs)
+        admin.add_view(PathwayView(Pathway, self.session))
+        admin.add_view(ProteinView(Protein, self.session))
+        admin.add_view(ChemicalView(Chemical, self.session))
+        admin.add_view(SpeciesView(Species, self.session))
+        return admin
