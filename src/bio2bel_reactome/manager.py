@@ -276,24 +276,6 @@ class Manager(CompathManager):
             if pathway.proteins
         }
 
-    def get_gene_distribution(self):
-        """Returns the proteins in the database within the gene set query
-
-        :rtype: dict
-        :return: pathway sizes
-        """
-
-        gene_counter = Counter()
-
-        for pathway in self.get_all_pathways():
-            if not pathway.proteins:
-                continue
-
-            for gene in pathway.proteins:
-                gene_counter[gene.hgnc_symbol] += 1
-
-        return gene_counter
-
     def get_pathway_by_name(self, pathway_name, species=None):
         """Gets a pathway by name
 
