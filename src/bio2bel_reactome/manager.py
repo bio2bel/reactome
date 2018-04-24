@@ -8,12 +8,11 @@ import itertools as itt
 import logging
 from collections import Counter
 
+from compath_utils import CompathManager
 from tqdm import tqdm
 
-from bio2bel import bio2bel_populater
 from bio2bel_chebi.manager import Manager as ChebiManager
 from bio2bel_hgnc.manager import Manager as HgncManager
-from compath_utils import CompathManager
 from .constants import MODULE_NAME
 from .models import Base, Chemical, Pathway, Protein, Species
 from .parsers import *
@@ -26,7 +25,8 @@ __all__ = [
 
 
 class Manager(CompathManager):
-    """Database manager"""
+    """Bio2BEL Reactome manager."""
+
     module_name = MODULE_NAME
     pathway_model = Pathway
     protein_model = Protein
@@ -41,7 +41,7 @@ class Manager(CompathManager):
         self.pid_protein = {}
 
     @property
-    def base(self):
+    def _base(self):
         return Base
 
     def count_pathways(self):
@@ -524,7 +524,6 @@ class Manager(CompathManager):
 
         self.session.commit()
 
-    @bio2bel_populater(MODULE_NAME)
     def populate(
             self,
             hgnc_manager=None,
