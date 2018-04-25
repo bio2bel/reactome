@@ -4,7 +4,6 @@ import click
 import logging
 import os
 
-from bio2bel import build_cli
 from .constants import DEFAULT_CACHE_CONNECTION
 from .manager import Manager
 from .utils import dict_to_pandas_df
