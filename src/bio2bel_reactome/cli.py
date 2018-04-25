@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import click
 import logging
 import os
-
-import click
 
 from bio2bel import build_cli
 from .constants import DEFAULT_CACHE_CONNECTION
@@ -12,7 +11,7 @@ from .utils import dict_to_pandas_df
 
 log = logging.getLogger(__name__)
 
-main = build_cli(Manager)
+main = Manager.get_cli()
 
 
 @main.command()
