@@ -1,5 +1,5 @@
-Bio2BEL Reactome |build| |coverage| |docs|
-==========================================
+Bio2BEL Reactome |build| |coverage| |documentation| |zenodo|
+============================================================
 This package allows the enrichment of BEL networks with Reactome information by wrapping its RESTful API.
 Furthermore, it is integrated in the `ComPath environment <https://github.com/ComPath>`_ for pathway database comparison.
 
@@ -87,3 +87,6 @@ Citation
 
 .. |pypi_license| image:: https://img.shields.io/pypi/l/bio2bel_reactome.svg
     :alt: MIT License
+
+.. |zenodo| image:: https://zenodo.org/badge/103138323.svg
+    :target: https://zenodo.org/badge/latestdoi/103138323
