@@ -346,7 +346,7 @@ class Manager(CompathManager):
         return [
             pathway.name
             for pathway in self.session.query(self.pathway_model).all()
-            if pathway.species == 'Homo sapiens'
+            if pathway.species.name == 'Homo sapiens'
         ]
 
     def get_pathways_by_species(self, species_name):
