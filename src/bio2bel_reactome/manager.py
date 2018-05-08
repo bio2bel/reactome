@@ -337,6 +337,17 @@ class Manager(CompathManager):
             for pathway in all_pathways
             if not pathway.parent_id
         ]
+    
+    def get_all_pathway_names(self):
+        """Gets all pathway names stored in the database
+
+        :rtype: list[str]
+        """
+        return [
+            pathway.name
+            for pathway in self.session.query(self.pathway_model).all()
+            if pathway.species == 'Homo sapiens'
+        ]
 
     def get_pathways_by_species(self, species_name):
         """Gets pathways by species"""
