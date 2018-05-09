@@ -8,11 +8,11 @@ import itertools as itt
 import logging
 from collections import Counter
 
-from compath_utils import CompathManager
 from tqdm import tqdm
 
 from bio2bel_chebi.manager import Manager as ChebiManager
 from bio2bel_hgnc.manager import Manager as HgncManager
+from compath_utils import CompathManager
 from .constants import MODULE_NAME
 from .models import Base, Chemical, Pathway, Protein, Species
 from .parsers import *
@@ -337,7 +337,7 @@ class Manager(CompathManager):
             for pathway in all_pathways
             if not pathway.parent_id
         ]
-    
+
     def get_all_pathway_names(self):
         """Gets all pathway names stored in the database
 
@@ -424,15 +424,19 @@ class Manager(CompathManager):
 
         self.session.commit()
 
-    def _pathway_protein(self, hgnc_manager, url=None, only_human=True):
+    def _pathway_protein(self, hgnc_manager=None, url=None, only_human=True):
         """Populates UniProt Tables
 
-        :param bio2bel_hgnc.manager.Manager hgnc_manager: Hgnc Manager.
+        :param Optional[bio2bel_hgnc.manager.Manager] hgnc_manager: Hgnc Manager.
         :param Optional[str] url: url from pathway protein file
         :param bool url: only_human: only store human genes. Defaults to True.
         """
+        if hgnc_manager is None:
+            hgnc_manager = HgncManager(connection=self.connection)
+        if not hgnc_manager.is_populated():
+            hgnc_manager.populate()
 
-        log.warning(
+        log.info(
             "downloading proteins. This might take a couple of minutes depending on your internet connection..."
         )
 
@@ -485,13 +489,17 @@ class Manager(CompathManager):
         if missing_hgnc_info:
             log.warning('missing %d hgncs', len(missing_hgnc_info))
 
-    def _pathway_chemical(self, chebi_manager, url=None, only_human=True):
+    def _pathway_chemical(self, chebi_manager=None, url=None, only_human=True):
         """ Populates Chebi Tables
 
-        :param bio2bel_chebi.manager.Manager chebi_manager: Chebi Manager
+        :param Optional[bio2bel_chebi.manager.Manager] chebi_manager: ChEBI Manager
         :param url: Optional[str] url: url from pathway chemical file
         :param bool only_human: only store human chemicals
         """
+        if chebi_manager is None:
+            chebi_manager = ChebiManager(connection=self.connection)
+        if not chebi_manager.is_populated():
+            chebi_manager.populate()
 
         log.info("downloading chemicals")
 
@@ -545,25 +553,20 @@ class Manager(CompathManager):
             pathways_chemicals_path=None,
             only_human=True
     ):
+        """Populate all tables.
 
-        """ Populates all tables
-
-        :param bio2bel_hgnc.manager.Manager hgnc_manager: Hgnc Manager
-        :param bio2bel_chebi.manager.Manager chebi_manager: Chebi Manager
-        :param pathways_path: Optional[str] url: url from pathway table file
-        :param pathways_hierarchy_path: Optional[str] url: url from pathway hierarchy file
-        :param pathways_proteins_path: Optional[str] url: url from pathway protein file
-        :param pathways_chemicals_path: Optional[str] url: url from pathway chemical file
+        :param Optional[bio2bel_hgnc.manager.Manager] hgnc_manager: HGNC Manager
+        :param Optional[bio2bel_chebi.manager.Manager] chebi_manager: ChEBI Manager
+        :param Optional[str] pathways_path: url from pathway table file
+        :param Optional[str] pathways_hierarchy_path: url from pathway hierarchy file
+        :param Optional[str] pathways_proteins_path: url from pathway protein file
+        :param Optional[str] pathways_chemicals_path: url from pathway chemical file
         :param bool only_human: only store human chemicals
         """
         self._populate_pathways(url=pathways_path)
         self._pathway_hierarchy(url=pathways_hierarchy_path)
-
-        hgnc_m = HgncManager.ensure(hgnc_manager)
-        chebi_m = ChebiManager.ensure(chebi_manager)
-
-        self._pathway_protein(hgnc_manager=hgnc_m, url=pathways_proteins_path, only_human=only_human)
-        self._pathway_chemical(chebi_manager=chebi_m, url=pathways_chemicals_path, only_human=only_human)
+        self._pathway_protein(hgnc_manager=hgnc_manager, url=pathways_proteins_path, only_human=only_human)
+        self._pathway_chemical(chebi_manager=chebi_manager, url=pathways_chemicals_path, only_human=only_human)
 
     def _add_admin(self, app, **kwargs):
         from flask_admin import Admin
