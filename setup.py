@@ -17,7 +17,7 @@ INSTALL_REQUIRES = [
     'bio2bel_chebi>=0.0.4',
     'pybel[deployment]>=0.11.1',
     'pybel-tools',
-    'sqlalchemy==1.2.7',
+    'sqlalchemy<=1.2.7',
     'pandas',
     'tqdm',
     'flask',
