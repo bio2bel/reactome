@@ -8,11 +8,11 @@ import itertools as itt
 import logging
 from collections import Counter
 
-from tqdm import tqdm
-
 from bio2bel_chebi.manager import Manager as ChebiManager
 from bio2bel_hgnc.manager import Manager as HgncManager
 from compath_utils import CompathManager
+from tqdm import tqdm
+
 from .constants import MODULE_NAME
 from .models import Base, Chemical, Pathway, Protein, Species
 from .parsers import *
@@ -45,28 +45,28 @@ class Manager(CompathManager):
         return Base
 
     def count_pathways(self):
-        """Counts the pathways in the database
+        """Count the pathways in the database.
 
         :rtype: int
         """
         return self.session.query(Pathway).count()
 
     def count_chemicals(self):
-        """Counts the chemicals in the database
+        """Count the chemicals in the database.
 
         :rtype: int
         """
         return self.session.query(Chemical).count()
 
     def count_proteins(self):
-        """Counts the proteins in the database
+        """Count the proteins in the database.
 
         :rtype: int
         """
         return self.session.query(Protein).count()
 
     def count_species(self):
-        """Counts the species in the database
+        """Count the species in the database.
 
         :rtype: int
         """
@@ -75,7 +75,7 @@ class Manager(CompathManager):
     """Custom query methods"""
 
     def query_gene_set(self, gene_set):
-        """Returns pathway counter dictionary
+        """Return pathway counter dictionary.
 
         :param list[str] gene_set: gene set to be queried
         :rtype: dict[str,dict]]
@@ -109,7 +109,7 @@ class Manager(CompathManager):
         return enrichment_results
 
     def export_genesets(self, species=None, top_hierarchy=None):
-        """Returns pathway - genesets mapping
+        """Return pathway - genesets mapping
 
         :param opt[str] species: pathways specific to a species
         :param opt[bool] top_hierarchy: extract only the top hierarchy pathways
@@ -147,7 +147,7 @@ class Manager(CompathManager):
         }
 
     def get_or_create_pathway(self, reactome_id, name, species):
-        """Gets an pathway from the database or creates it
+        """Get a pathway from the database or creates it.
 
         :param str reactome_id: pathway identifier
         :param str name: name of the pathway
@@ -167,7 +167,7 @@ class Manager(CompathManager):
         return pathway
 
     def get_or_create_chemical(self, chebi_id, chebi_name):
-        """Gets a Chemical from the database or creates it
+        """Get a Chemical from the database or creates it.
 
         :param str chebi_id: identifier
         :param str chebi_name: name
@@ -186,7 +186,7 @@ class Manager(CompathManager):
         return chemical
 
     def get_or_create_species(self, species_name):
-        """Gets an Species from the database or creates it
+        """Get a Species from the database or creates it.
 
         :param str species_name: name
         :rtype: Species
@@ -202,7 +202,7 @@ class Manager(CompathManager):
         return species
 
     def get_or_create_protein(self, uniprot_id, hgnc_symbol=None, hgnc_id=None):
-        """Gets an protein from the database or creates it
+        """Get an protein from the database or creates it.
 
         :param str uniprot_id: pathway identifier
         :param Optional[str] hgnc_symbol: name of the pathway
@@ -230,7 +230,7 @@ class Manager(CompathManager):
         return protein
 
     def get_species_by_name(self, species_name):
-        """Gets a Species by its species_name
+        """Get a Species by its species_name.
 
         :param str species_name: name
         :rtype: Optional[Species]
@@ -238,7 +238,7 @@ class Manager(CompathManager):
         return self.session.query(Species).filter(Species.name == species_name).one_or_none()
 
     def get_pathway_names_to_ids(self):
-        """Returns a dictionary of pathway names to ids
+        """Return a dictionary of pathway names to ids
 
         :rtype: dict[str,str]
         """
@@ -250,7 +250,7 @@ class Manager(CompathManager):
         }
 
     def get_all_hgnc_symbols(self):
-        """Returns the set of genes present in all Reactome Pathways
+        """Return the set of genes present in all Reactome Pathways.
 
         :rtype: set
         """
@@ -262,7 +262,7 @@ class Manager(CompathManager):
         }
 
     def get_pathway_size_distribution(self):
-        """Returns pathway sizes
+        """Return pathway sizes.
 
         :rtype: dict
         :return: pathway sizes
@@ -277,7 +277,7 @@ class Manager(CompathManager):
         }
 
     def get_pathway_by_name(self, pathway_name, species=None):
-        """Gets a pathway by name
+        """Get a pathway by name.
 
         :param pathway_name: name
         :param Optional[str] species: name
@@ -299,7 +299,7 @@ class Manager(CompathManager):
         return None
 
     def get_pathway_parent_by_id(self, reactome_id):
-        """Gets parent pathway by its reactome id
+        """Get parent pathway by its reactome id.
 
         :param reactome_id: reactome identifier
         :rtype: Optional[Pathway]
@@ -312,7 +312,7 @@ class Manager(CompathManager):
         return pathway.parent
 
     def get_top_hiearchy_parent_by_id(self, reactome_id):
-        """Gets the oldest pathway at the top of the hierarchy a pathway by its reactome id
+        """Get the oldest pathway at the top of the hierarchy a pathway by its reactome id.
 
         :param reactome_id: reactome identifier
         :rtype: Optional[Pathway]
@@ -326,7 +326,7 @@ class Manager(CompathManager):
         return self.get_top_hiearchy_parent_by_id(pathway.parent.reactome_id)
 
     def get_all_top_hierarchy_pathways(self):
-        """Gets all pathways without a parent (top hierarchy)
+        """Get all pathways without a parent (top hierarchy).
 
         :rtype: list[Pathways]
         """
@@ -339,7 +339,7 @@ class Manager(CompathManager):
         ]
 
     def get_all_pathway_names(self):
-        """Gets all pathway names stored in the database
+        """Get all pathway names stored in the database.
 
         :rtype: list[str]
         """
@@ -350,7 +350,7 @@ class Manager(CompathManager):
         ]
 
     def get_pathways_by_species(self, species_name):
-        """Gets pathways by species"""
+        """Get pathways by species."""
         filtered_species = self.session.query(Species).filter(Species.name == species_name).one_or_none()
 
         if not filtered_species:
@@ -359,11 +359,11 @@ class Manager(CompathManager):
         return filtered_species.pathways
 
     def get_chemical_by_chebi_id(self, chebi_id):
-        """Gets chemical by CHEBI id"""
+        """Get chemical by CHEBI id."""
         return self.session.query(Chemical).filter(Chemical.chebi_id == chebi_id).one_or_none()
 
     def get_protein_by_uniprot_id(self, uniprot_id):
-        """Gets protein by UniProt id"""
+        """Get protein by UniProt id."""
         return self.session.query(Protein).filter(Protein.uniprot_id == uniprot_id).one_or_none()
 
     """Custom Methods to Populate the DB"""

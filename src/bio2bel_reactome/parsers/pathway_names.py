@@ -17,7 +17,7 @@ __all__ = [
 
 
 def get_pathway_names_df(url=None):
-    """ Converts tab separated txt files to pandas Dataframe
+    """Convert tab separated txt files to pandas Dataframe.
 
     :param Optional[str] url: url from reactome tab separated file
     :return: dataframe of the file
@@ -32,7 +32,7 @@ def get_pathway_names_df(url=None):
 
 
 def parse_pathway_names(pathway_names_df):
-    """ Parser the pathway name dataframe
+    """Parse the pathway name dataframe.
 
     :param pandas.DataFrame pathway_names_df: Pathway hierarchy as dataframe
     :rtype: dict

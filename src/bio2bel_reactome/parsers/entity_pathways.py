@@ -30,7 +30,7 @@ log = logging.getLogger(__name__)
 
 
 def _get_data_helper(default_url, url=None):
-    """
+    """Read csv file.
 
     :param str default_url:
     :param Optional[str] url:
@@ -44,7 +44,7 @@ def _get_data_helper(default_url, url=None):
 
 
 def get_proteins_pathways_df(url=None):
-    """Gets the protein to pathways mapping
+    """Get the protein to pathways mapping.
 
     :param Optional[str] url:
     :rtype: pandas.DataFrame
@@ -53,7 +53,7 @@ def get_proteins_pathways_df(url=None):
 
 
 def get_chemicals_pathways_df(url=None):
-    """Gets the chemicals to pathways mapping
+    """Get the chemicals to pathways mapping.
 
     :param Optional[str] url:
     :rtype: pandas.DataFrame
@@ -62,7 +62,7 @@ def get_chemicals_pathways_df(url=None):
 
 
 def parse_entities_pathways(entities_pathways_df, only_human=True):
-    """ Parser the entity - pathway dataframe
+    """Parse the entity - pathway dataframe.
 
     :param pandas.DataFrame entities_pathways_df: File as dataframe
     :param bool only_human: parse only human entities. Defaults to True.
@@ -85,7 +85,7 @@ def parse_entities_pathways(entities_pathways_df, only_human=True):
 
 
 def get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id):
-    """Returns HGNC symbol and id from PyHGNC query
+    """Return HGNC symbol and id from PyHGNC query.
 
     :param bio2bel_hgnc.Manager hgnc_manager: Manager
     :param str uniprot_id: UniProt identifier
@@ -95,7 +95,7 @@ def get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id):
 
     if not gene:
 
-        # Checks if minus is part of the uniprot id -> isoform signature
+        # Check if minus is part of the uniprot id -> isoform signature
         if '-' not in uniprot_id:
             return None
 

@@ -19,7 +19,7 @@ __all__ = [
 ]
 
 def get_pathway_hierarchy_df(url=None):
-    """ Converts tab separated txt files to pandas Dataframe
+    """Convert tab separated txt files to pandas Dataframe.
 
     :param Optional[str] url: url from reactome tab separated file
     :return: dataframe of the file
@@ -35,7 +35,7 @@ def get_pathway_hierarchy_df(url=None):
 
 
 def parse_pathway_hierarchy(pathway_dataframe):
-    """ Parser the pathway hierarchy dataframe
+    """Parse the pathway hierarchy dataframe.
 
     :param pandas.DataFrame pathway_dataframe: Parent - child pathway relationships
     :rtype: list[tuple]

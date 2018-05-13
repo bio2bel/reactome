@@ -82,7 +82,7 @@ class Pathway(Base):
         )
 
     def get_gene_set(self):
-        """Returns the genes associated with the pathway (gene set). Note this function restricts to HGNC symbols genes
+        """Return the genes associated with the pathway (gene set). Note this function restricts to HGNC symbols genes.
 
         :rtype: set[bio2bel_reactome.models.Protein]
         """
@@ -148,7 +148,7 @@ class Protein(Base):
             )
 
     def get_pathways_ids(self):
-        """Returns the pathways associated with the protein"""
+        """Return the pathways associated with the protein."""
         return {
             pathway.reactome_id
             for pathway in self.pathways

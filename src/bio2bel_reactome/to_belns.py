@@ -18,7 +18,7 @@ MODULE_NAME = 'reactome'
 
 
 def get_values(url=None):
-    """Gets the unique names from Reactome pathway names table. Combines all species.
+    """Get the unique names from Reactome pathway names table. Combines all species.
 
     :param Optional[str] url: A non-default URL for the Reactome pathway names table
     :rtype: set[str]
@@ -31,7 +31,7 @@ def get_values(url=None):
 
 
 def write_belns(file=None, url=None):
-    """Prints the Reactome Pathway names BEL namespace
+    """Print the Reactome Pathway names BEL namespace.
 
     :param file file: A writable file or file-like. Defaults to standard out
     """
@@ -54,7 +54,7 @@ def write_belns(file=None, url=None):
 
 
 def deploy_to_arty(quit_fail_redeploy=True):
-    """Gets the data, writes BEL namespace, and writes BEL knowledge to Artifactory"""
+    """Get the data, writes BEL namespace, and writes BEL knowledge to Artifactory."""
 
     file_name = get_today_arty_namespace(MODULE_NAME)
 
