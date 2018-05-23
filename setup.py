@@ -15,7 +15,7 @@ INSTALL_REQUIRES = [
     'compath_utils>=0.0.3',
     'bio2bel_hgnc>=0.0.4',
     'bio2bel_chebi>=0.0.4',
-    'pybel[deployment]>=0.11.1',
+    'pybel>=0.11.1',
     'pybel-tools',
     'sqlalchemy<=1.2.7',
     'pandas',
