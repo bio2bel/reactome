@@ -31,6 +31,7 @@ class Manager(CompathManager):
     pathway_model = Pathway
     protein_model = Protein
     pathway_model_identifier_column = Pathway.reactome_id
+    flask_admin_models = [Pathway, Protein, Species, Chemical]
 
     has_hierarchy = True  # Indicates that this manager can handle hierarchies with the Pathway Model
 
