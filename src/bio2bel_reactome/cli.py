@@ -23,7 +23,7 @@ def export(connection, species, top_hierarchy):
 
     log.info("Querying the database")
 
-    genesets = dict_to_pandas_df(m.export_genesets(species=species, top_hierarchy=top_hierarchy))
+    genesets = dict_to_pandas_df(m.export_gene_sets(species=species, top_hierarchy=top_hierarchy))
 
     log.info("Geneset exported to '{}/reactome_gene_sets.xlsx'".format(os.getcwd()))
 

@@ -10,9 +10,9 @@ from collections import Counter
 
 from bio2bel_chebi.manager import Manager as ChebiManager
 from bio2bel_hgnc.manager import Manager as HgncManager
-from compath_utils import CompathManager
 from tqdm import tqdm
 
+from compath_utils import CompathManager
 from .constants import MODULE_NAME
 from .models import Base, Chemical, Pathway, Protein, Species
 from .parsers import *
@@ -109,7 +109,7 @@ class Manager(CompathManager):
 
         return enrichment_results
 
-    def export_genesets(self, species=None, top_hierarchy=None):
+    def export_gene_sets(self, species='Homo sapiens', top_hierarchy=None):
         """Return pathway - genesets mapping
 
         :param opt[str] species: pathways specific to a species
@@ -145,6 +145,22 @@ class Manager(CompathManager):
                 for protein in pathway.proteins
             }
             for pathway in self.session.query(Pathway).all()
+        }
+
+    def get_gene_sets(self):
+        """Return pathway - genesets mapping
+
+        :rtype: dict[set]
+        :return: pathways' gene sets
+        """
+        human_pathways = self.get_pathways_by_species('Homo sapiens')
+
+        return {
+            pathway.name: {
+                protein.hgnc_symbol
+                for protein in pathway.proteins
+            }
+            for pathway in human_pathways
         }
 
     def get_or_create_pathway(self, reactome_id, name, species):
