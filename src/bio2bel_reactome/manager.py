@@ -124,7 +124,7 @@ class Manager(CompathManager):
                     protein.hgnc_symbol
                     for protein in pathway.proteins
                 }
-                for pathway in self.session.query(Pathway).join(Species).filter(Pathway.species.name == species).all()
+                for pathway in self.session.query(Pathway).join(Species).filter(Species.name == species).all()
             }
 
         if top_hierarchy:
