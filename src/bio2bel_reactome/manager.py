@@ -119,12 +119,15 @@ class Manager(CompathManager):
         """
 
         if species:
+            pathways = self.session.query(Pathway).join(Species).filter(Species.name == species).all()
             return {
                 pathway.name: {
                     protein.hgnc_symbol
                     for protein in pathway.proteins
+                    if protein.hgnc_symbol
                 }
-                for pathway in self.session.query(Pathway).join(Species).filter(Species.name == species).all()
+                for pathway in pathways
+                if pathway.proteins
             }
 
         if top_hierarchy:
@@ -132,9 +135,10 @@ class Manager(CompathManager):
                 pathway.name: {
                     protein.hgnc_symbol
                     for protein in pathway.proteins
+                    if protein.hgnc_symbol
                 }
                 for pathway in self.session.query(Pathway).all()
-                if not pathway.parent_id
+                if not pathway.parent_id and pathway.proteins
             }
 
         # if no species and not top hierarchy return all
@@ -142,8 +146,10 @@ class Manager(CompathManager):
             pathway.name: {
                 protein.hgnc_symbol
                 for protein in pathway.proteins
+                if protein.hgnc_symbol
             }
             for pathway in self.session.query(Pathway).all()
+            if pathway.proteins
         }
 
     def get_gene_sets(self):
@@ -158,8 +164,10 @@ class Manager(CompathManager):
             pathway.name: {
                 protein.hgnc_symbol
                 for protein in pathway.proteins
+                if protein.hgnc_symbol
             }
             for pathway in human_pathways
+            if pathway.proteins
         }
 
     def get_or_create_pathway(self, reactome_id, name, species):
