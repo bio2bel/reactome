@@ -10,8 +10,12 @@ matrix:
     - env: TOXENV=manifest
     - env: TOXENV=rst-lint
     - env: TOXENV=flake8
+    - env: TOXENV=doc8
+    - env: TOXENV=pylint
   allow_failures:
     - env: TOXENV=flake8
+    - env: TOXENV=doc8
+    - env: TOXENV=pylint
 install:
 - pip install tox
 - pip install codecov
