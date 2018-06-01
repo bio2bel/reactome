@@ -13,7 +13,7 @@ INSTALL_REQUIRES = [
     'click',
     'bio2bel==0.0.12',
     'compath_utils==0.0.3',
-    'bio2bel_hgnc==0.0.4',
+    'bio2bel_hgnc==0.0.7',
     'bio2bel_chebi==0.0.5',
     'pybel==0.11.2',
     'sqlalchemy',
