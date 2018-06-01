@@ -11,11 +11,11 @@ PACKAGES = setuptools.find_packages(where='src')
 META_PATH = os.path.join('src', 'bio2bel_{}'.format(BIO2BEL_MODULE), '__init__.py')
 INSTALL_REQUIRES = [
     'click',
-    'bio2bel==0.0.12',
-    'compath_utils==0.0.3',
-    'bio2bel_hgnc==0.0.7',
-    'bio2bel_chebi==0.0.5',
-    'pybel==0.11.2',
+    'bio2bel>=0.0.12',
+    'compath_utils>=0.0.5',
+    'bio2bel_hgnc>=0.0.7',
+    'bio2bel_chebi>=0.0.6',
+    'pybel>=0.11.2',
     'sqlalchemy',
     'pandas',
     'tqdm',
