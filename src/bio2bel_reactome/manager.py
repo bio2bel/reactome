@@ -152,6 +152,20 @@ class Manager(CompathManager):
             if pathway.proteins
         }
 
+    def get_gene_distribution(self):
+        """Return the proteins in the database within the gene set query.
+
+        :rtype: collections.Counter
+        :return: pathway sizes
+        """
+        return Counter(
+            gene.hgnc_symbol
+            for pathway in self.get_all_pathways()
+            if pathway.proteins
+            for gene in pathway.proteins
+            if gene.hgnc_symbol
+        )
+
     def get_gene_sets(self):
         """Return pathway - genesets mapping
 
