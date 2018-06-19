@@ -1,5 +1,5 @@
 click
-bio2bel>=0.0.12
+bio2bel>=0.0.13
 compath_utils>=0.0.5
 pybel>=0.11.2
 sqlalchemy

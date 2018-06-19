@@ -11,7 +11,7 @@ PACKAGES = setuptools.find_packages(where='src')
 META_PATH = os.path.join('src', 'bio2bel_{}'.format(BIO2BEL_MODULE), '__init__.py')
 INSTALL_REQUIRES = [
     'click',
-    'bio2bel>=0.0.12',
+    'bio2bel>=0.0.13',
     'compath_utils>=0.0.5',
     'bio2bel_hgnc>=0.0.7',
     'bio2bel_chebi>=0.0.6',
