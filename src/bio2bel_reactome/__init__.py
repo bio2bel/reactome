@@ -18,7 +18,7 @@ Citation
 
 from .manager import Manager
 
-__version__ = '0.0.11'
+__version__ = '0.0.12-dev'
 
 __title__ = 'bio2bel_reactome'
 __description__ = "A wrapper around Reactome RESTful API"
