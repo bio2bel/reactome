@@ -10,9 +10,9 @@ from collections import Counter
 
 from bio2bel_chebi.manager import Manager as ChebiManager
 from bio2bel_hgnc.manager import Manager as HgncManager
+from compath_utils import CompathManager
 from tqdm import tqdm
 
-from compath_utils import CompathManager
 from .constants import MODULE_NAME
 from .models import Base, Chemical, Pathway, Protein, Species
 from .parsers import *
@@ -44,6 +44,18 @@ class Manager(CompathManager):
     @property
     def _base(self):
         return Base
+
+    def summarize(self):
+        """Summarize the database.
+
+        :rtype: dict[str,int]
+        """
+        return dict(
+            pathways=self._count_model(Pathway),
+            proteins=self._count_model(Protein),
+            chemicals=self.count_chemicals(),
+            species=self.count_species()
+        )
 
     def count_pathways(self):
         """Count the pathways in the database.
