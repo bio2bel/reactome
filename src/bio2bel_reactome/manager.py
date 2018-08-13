@@ -8,8 +8,8 @@ import itertools as itt
 import logging
 from collections import Counter
 
-from bio2bel_chebi.manager import Manager as ChebiManager
-from bio2bel_hgnc.manager import Manager as HgncManager
+import bio2bel_chebi
+import bio2bel_hgnc
 from compath_utils import CompathManager
 from tqdm import tqdm
 
@@ -474,15 +474,13 @@ class Manager(CompathManager):
 
         self.session.commit()
 
-    def _pathway_protein(self, hgnc_manager=None, url=None, only_human=True):
-        """Populates UniProt Tables
+    def _pathway_protein(self, url=None, only_human=True):
+        """Populate UniProt tables.
 
-        :param Optional[bio2bel_hgnc.manager.Manager] hgnc_manager: Hgnc Manager.
         :param Optional[str] url: url from pathway protein file
         :param bool url: only_human: only store human genes. Defaults to True.
         """
-        if hgnc_manager is None:
-            hgnc_manager = HgncManager(connection=self.connection)
+        hgnc_manager = bio2bel_hgnc.Manager(engine=self.engine, session=self.session)
         if not hgnc_manager.is_populated():
             hgnc_manager.populate()
 
@@ -539,15 +537,13 @@ class Manager(CompathManager):
         if missing_hgnc_info:
             log.warning('missing %d hgncs', len(missing_hgnc_info))
 
-    def _pathway_chemical(self, chebi_manager=None, url=None, only_human=True):
-        """ Populates Chebi Tables
+    def _pathway_chemical(self, url=None, only_human=True):
+        """Populate ChEBI tables.
 
-        :param Optional[bio2bel_chebi.manager.Manager] chebi_manager: ChEBI Manager
         :param url: Optional[str] url: url from pathway chemical file
         :param bool only_human: only store human chemicals
         """
-        if chebi_manager is None:
-            chebi_manager = ChebiManager(connection=self.connection)
+        chebi_manager = bio2bel_chebi.Manager(engine=self.engine, session=self.session)
         if not chebi_manager.is_populated():
             chebi_manager.populate()
 
@@ -595,8 +591,6 @@ class Manager(CompathManager):
 
     def populate(
             self,
-            hgnc_manager=None,
-            chebi_manager=None,
             pathways_path=None,
             pathways_hierarchy_path=None,
             pathways_proteins_path=None,
@@ -615,8 +609,8 @@ class Manager(CompathManager):
         """
         self._populate_pathways(url=pathways_path)
         self._pathway_hierarchy(url=pathways_hierarchy_path)
-        self._pathway_protein(hgnc_manager=hgnc_manager, url=pathways_proteins_path, only_human=only_human)
-        self._pathway_chemical(chebi_manager=chebi_manager, url=pathways_chemicals_path, only_human=only_human)
+        self._pathway_protein(url=pathways_proteins_path, only_human=only_human)
+        self._pathway_chemical(url=pathways_chemicals_path, only_human=only_human)
 
     def _add_admin(self, app, **kwargs):
         from flask_admin import Admin

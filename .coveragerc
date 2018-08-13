@@ -1,0 +1,18 @@
+[run]
+branch = True
+source = bio2bel_reactome
+omit =
+    tests/*
+    docs/*
+    scripts/*
+
+[paths]
+source =
+    src/bio2bel_reactome
+    .tox/*/lib/python*/site-packages/bio2bel_reactome
+
+[report]
+show_missing = True
+exclude_lines =
+    def __str__
+    def __repr__
