@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import click
 import logging
 import os
 
-from .constants import DEFAULT_CACHE_CONNECTION
+import click
+
 from .manager import Manager
 from .utils import dict_to_pandas_df
 
@@ -14,7 +14,7 @@ main = Manager.get_cli()
 
 
 @main.command()
-@click.option('-c', '--connection', help="Defaults to {}".format(DEFAULT_CACHE_CONNECTION))
+@click.option('-c', '--connection')
 @click.option('-species', '--species', help="Specific species ex: --species='Homo sapiens'")
 @click.option('-hierarchy', '--top-hierarchy', is_flag=True, help="Extract only the highest level in the hierarchy")
 def export(connection, species, top_hierarchy):
