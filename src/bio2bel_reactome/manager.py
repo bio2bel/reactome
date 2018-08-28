@@ -95,7 +95,7 @@ class Manager(CompathManager):
         :param int top: return only X entries
         :return: Optional[models.Pathway]
         """
-        similar_pathways = self.session.query(self.pathway_model).filter(and_(
+        similar_pathways = self.session.query(self.pathway_model).join(Species).filter(and_(
             self.pathway_model.name.contains(pathway_name),
             Species.name == 'Homo sapiens')
         ).all()
