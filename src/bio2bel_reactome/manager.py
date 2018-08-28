@@ -11,6 +11,7 @@ from collections import Counter
 import bio2bel_chebi
 import bio2bel_hgnc
 from compath_utils import CompathManager
+from sqlalchemy import and_
 from tqdm import tqdm
 
 from .constants import MODULE_NAME
@@ -86,6 +87,28 @@ class Manager(CompathManager):
         return self.session.query(Species).count()
 
     """Custom query methods"""
+
+    def query_similar_pathways(self, pathway_name, top=None):
+        """Filter pathways by name.
+
+        :param str pathway_name: pathway name to query
+        :param int top: return only X entries
+        :return: Optional[models.Pathway]
+        """
+        similar_pathways = self.session.query(self.pathway_model).filter(and_(
+            self.pathway_model.name.contains(pathway_name),
+            Species.name == 'Homo sapiens')
+        ).all()
+
+        similar_pathways = [
+            (pathway.resource_id, pathway.name)
+            for pathway in similar_pathways
+        ]
+
+        if top:
+            return similar_pathways[:top]
+
+        return similar_pathways
 
     def query_gene_set(self, gene_set):
         """Return pathway counter dictionary.
