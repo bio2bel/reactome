@@ -36,8 +36,8 @@ class Manager(CompathManager):
 
     has_hierarchy = True  # Indicates that this manager can handle hierarchies with the Pathway Model
 
-    def __init__(self, connection=None):
-        super().__init__(connection=connection)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         # Global dictionary
         self.pid_protein = {}
