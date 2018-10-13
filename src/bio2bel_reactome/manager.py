@@ -32,8 +32,8 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
     """Bio2BEL Reactome manager."""
 
     module_name = MODULE_NAME
-    pathway_model = Pathway
     protein_model = Protein
+    namespace_model = pathway_model = Pathway
     pathway_model_identifier_column = Pathway.reactome_id
     flask_admin_models = [Pathway, Protein, Species, Chemical]
 
