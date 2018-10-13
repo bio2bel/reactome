@@ -10,10 +10,10 @@ from collections import Counter
 
 import bio2bel_chebi
 import bio2bel_hgnc
-from compath_utils import CompathManager
 from sqlalchemy import and_
 from tqdm import tqdm
 
+from compath_utils import CompathManager
 from .constants import MODULE_NAME
 from .models import Base, Chemical, Pathway, Protein, Species
 from .parsers import *
@@ -344,7 +344,7 @@ class Manager(CompathManager):
         pathways = self.get_pathways_by_species('Homo sapiens')
 
         return {
-            pathway.name: len(pathway.proteins)
+            (pathway.resource_id, pathway.name): len(pathway.proteins)
             for pathway in pathways
             if pathway.proteins
         }
