@@ -12,6 +12,7 @@ from bio2bel.manager.bel_manager import BELManagerMixin
 from bio2bel.manager.flask_manager import FlaskMixin
 from bio2bel.manager.namespace_manager import BELNamespaceManagerMixin
 from pybel.manager.models import NamespaceEntry
+from pybel import BELGraph
 from sqlalchemy import and_
 from tqdm import tqdm
 
@@ -458,6 +459,16 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
         :rtype: str
         """
         return model.reactome_id
+
+    def to_bel(self) -> BELGraph:
+        """Serialize Reactome to BEL."""
+        graph = BELGraph(
+            name='Reactome Pathway Definitions',
+            version='1.0.0',
+        )
+        for pathway in self.list_pathways():
+            self._add_pathway_to_graph(graph, pathway)
+        return graph
 
     """Custom Methods to Populate the DB"""
 
