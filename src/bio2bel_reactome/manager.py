@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""
-This module populates the tables of bio2bel_reactome
-"""
+"""This module populates the tables of bio2bel_reactome."""
 
 import itertools as itt
 import logging
@@ -10,6 +8,10 @@ from collections import Counter
 
 import bio2bel_chebi
 import bio2bel_hgnc
+from bio2bel.manager.bel_manager import BELManagerMixin
+from bio2bel.manager.flask_manager import FlaskMixin
+from bio2bel.manager.namespace_manager import BELNamespaceManagerMixin
+from pybel.manager.models import NamespaceEntry
 from sqlalchemy import and_
 from tqdm import tqdm
 
@@ -25,7 +27,7 @@ __all__ = [
 ]
 
 
-class Manager(CompathManager):
+class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMixin):
     """Bio2BEL Reactome manager."""
 
     module_name = MODULE_NAME
@@ -438,6 +440,24 @@ class Manager(CompathManager):
     def get_protein_by_uniprot_id(self, uniprot_id):
         """Get protein by UniProt id."""
         return self.session.query(Protein).filter(Protein.uniprot_id == uniprot_id).one_or_none()
+
+    def _create_namespace_entry_from_model(self, model, namespace):
+        """Create a namespace entry from the model.
+
+        :param Pathway model: The model to convert
+        :type namespace: pybel.manager.models.Namespace
+        :rtype: Optional[pybel.manager.models.NamespaceEntry]
+        """
+        return NamespaceEntry(encoding='B', name=model.name, identifier=model.reactome_id, namespace=namespace)
+
+    @staticmethod
+    def _get_identifier(model):
+        """Extract the identifier from a pathway mode.
+
+        :param Pathway model: The model to convert
+        :rtype: str
+        """
+        return model.reactome_id
 
     """Custom Methods to Populate the DB"""
 
