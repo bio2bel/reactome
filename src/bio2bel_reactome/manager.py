@@ -346,7 +346,7 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
         pathways = self.get_pathways_by_species('Homo sapiens')
 
         return {
-            (pathway.resource_id, pathway.name): len(pathway.proteins)
+            pathway.resource_id: [pathway.name, len(pathway.proteins)]
             for pathway in pathways
             if pathway.proteins
         }
