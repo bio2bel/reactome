@@ -2,21 +2,22 @@
 
 """This module populates the tables of bio2bel_reactome."""
 
-import itertools as itt
 import logging
 from collections import Counter
+from typing import Mapping, Optional
+
+import itertools as itt
+from sqlalchemy import and_
+from tqdm import tqdm
 
 import bio2bel_chebi
 import bio2bel_hgnc
 from bio2bel.manager.bel_manager import BELManagerMixin
 from bio2bel.manager.flask_manager import FlaskMixin
 from bio2bel.manager.namespace_manager import BELNamespaceManagerMixin
-from pybel.manager.models import NamespaceEntry
-from pybel import BELGraph
-from sqlalchemy import and_
-from tqdm import tqdm
-
 from compath_utils import CompathManager
+from pybel import BELGraph
+from pybel.manager.models import NamespaceEntry
 from .constants import MODULE_NAME
 from .models import Base, Chemical, Pathway, Protein, Species
 from .parsers import *
@@ -24,7 +25,7 @@ from .parsers import *
 log = logging.getLogger(__name__)
 
 __all__ = [
-    'Manager'
+    'Manager',
 ]
 
 
@@ -49,11 +50,8 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
     def _base(self):
         return Base
 
-    def summarize(self):
-        """Summarize the database.
-
-        :rtype: dict[str,int]
-        """
+    def summarize(self) -> Mapping[str, int]:
+        """Summarize the database."""
         return dict(
             pathways=self._count_model(Pathway),
             proteins=self._count_model(Protein),
@@ -61,32 +59,20 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
             species=self.count_species()
         )
 
-    def count_pathways(self):
-        """Count the pathways in the database.
-
-        :rtype: int
-        """
+    def count_pathways(self) -> int:
+        """Count the pathways in the database."""
         return self.session.query(Pathway).count()
 
-    def count_chemicals(self):
-        """Count the chemicals in the database.
-
-        :rtype: int
-        """
+    def count_chemicals(self) -> int:
+        """Count the chemicals in the database."""
         return self.session.query(Chemical).count()
 
-    def count_proteins(self):
-        """Count the proteins in the database.
-
-        :rtype: int
-        """
+    def count_proteins(self) -> int:
+        """Count the proteins in the database."""
         return self.session.query(Protein).count()
 
-    def count_species(self):
-        """Count the species in the database.
-
-        :rtype: int
-        """
+    def count_species(self) -> int:
+        """Count the species in the database."""
         return self.session.query(Species).count()
 
     """Custom query methods"""
@@ -472,10 +458,10 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
 
     """Custom Methods to Populate the DB"""
 
-    def _populate_pathways(self, url=None):
-        """ Populate pathway table
+    def _populate_pathways(self, url: Optional[str] = None):
+        """Populate the pathway table.
 
-        :param url: Optional[str] url: url from pathway table file
+        :param url: url from pathway table file
         """
 
         df = get_pathway_names_df(url=url)
