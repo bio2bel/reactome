@@ -3,8 +3,8 @@
 """This module populates the tables of bio2bel_reactome."""
 
 import logging
-from collections import Counter, Mapping
-from typing import Optional
+from collections import Counter
+from typing import Mapping, Optional
 
 import itertools as itt
 from sqlalchemy import and_
