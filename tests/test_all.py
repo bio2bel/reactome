@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 
-""" This module contains the tests related with the graph enrichment"""
-
-from pybel.dsl import abundance, protein
+"""This module contains the tests related with the graph enrichment."""
 
 from bio2bel_chebi.manager import Manager as ChebiManager
 from bio2bel_chebi.models import Chemical
-from bio2bel_reactome.constants import CHEBI
+from bio2bel_reactome.constants import CHEBI, UNIPROT
 from bio2bel_reactome.models import Chemical
+from pybel.dsl import abundance, protein
 from tests.constants import DatabaseMixin
 
 
 class TestGlobal(DatabaseMixin):
-    """Tests the parsing module"""
+    """Tests the parsing module."""
 
     def test_get_all_human_pathways(self):
-        """Checks get all human pathways"""
+        """Check get all human pathways."""
 
         human_pathways = self.manager.get_pathways_by_species('Homo sapiens')
         xenopus_pathways = self.manager.get_pathways_by_species('Xenopus tropicalis')
@@ -33,8 +32,8 @@ class TestGlobal(DatabaseMixin):
         self.assertIsNotNone(cd86_uniprot)
 
         self.assertEqual(
-            cd86_uniprot.as_pybel_dict(),
-            protein(namespace='UNIPROT', name='A0A0G2JXF7', identifier='A0A0G2JXF7')
+            cd86_uniprot.to_pybel(),
+            protein(namespace=UNIPROT, name='A0A0G2JXF7', identifier='A0A0G2JXF7')
         )
 
     def test_chebi_exporting(self):
@@ -69,7 +68,6 @@ class TestGlobal(DatabaseMixin):
 
     def test_protein_1(self):
         """Test protein relationships"""
-
         protein = self.manager.get_protein_by_uniprot_id('P08237')
         self.assertIsNotNone(protein, 'Protein not found')
         self.assertEqual(3, len(protein.pathways))
