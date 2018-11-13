@@ -16,7 +16,7 @@ REACTOME_PATHWAY_LINK = 'https://reactome.org/PathwayBrowser/'
 
 # Namespace constants
 
-REACTOME = 'REACTOME'
-HGNC = 'HGNC'
-UNIPROT = 'UNIPROT'
-CHEBI = 'CHEBI'
+REACTOME = 'reactome'
+HGNC = 'hgnc'
+UNIPROT = 'uniprot'
+CHEBI = 'chebi'

@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
-"""Reactome database model"""
+"""Reactome database model."""
 
-from pybel.dsl import abundance, bioprocess, protein
 from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import backref, relationship
 
+import pybel.dsl
+from pybel.dsl import abundance
 from .constants import CHEBI, HGNC, REACTOME, UNIPROT
 
 Base = declarative_base()
@@ -71,11 +72,9 @@ class Pathway(Base):
     def __repr__(self):
         return self.name
 
-    def as_pybel_dict(self):
-        """Function to serialize to PyBEL node data dictionary.
-        :rtype: pybel.dsl.bioprocess
-        """
-        return bioprocess(
+    def to_pybel(self) -> pybel.dsl.BiologicalProcess:
+        """Function to serialize to PyBEL node data dictionary."""
+        return pybel.dsl.BiologicalProcess(
             namespace=REACTOME,
             name=str(self.name),
             identifier=str(self.reactome_id)
@@ -128,20 +127,18 @@ class Protein(Base):
     def __repr__(self):
         return self.uniprot_id
 
-    def as_pybel_dict(self):
-        """Function to serialize to PyBEL node data dictionary.
-        :rtype: pybel.dsl.protein
-        """
+    def to_pybel(self) -> pybel.dsl.Protein:
+        """Function to serialize to PyBEL node data dictionary."""
 
         if self.hgnc_symbol and self.hgnc_id:
-            return protein(
+            return pybel.dsl.Protein(
                 namespace=HGNC,
                 name=str(self.hgnc_symbol),
                 identifier=str(self.hgnc_id)
             )
 
         else:
-            return protein(
+            return pybel.dsl.Protein(
                 namespace=UNIPROT,
                 name=str(self.uniprot_id),
                 identifier=str(self.uniprot_id)
@@ -156,9 +153,9 @@ class Protein(Base):
 
 
 class Chemical(Base):
-    """Chemical Table"""
-    __tablename__ = CHEMICAL_TABLE_NAME
+    """Chemical Table."""
 
+    __tablename__ = CHEMICAL_TABLE_NAME
     id = Column(Integer, primary_key=True)
 
     chebi_id = Column(String(64), unique=True, nullable=False)
@@ -167,11 +164,9 @@ class Chemical(Base):
     def __repr__(self):
         return self.chebi_id
 
-    def as_pybel_dict(self):
-        """Function to serialize to PyBEL node data dictionary.
-        :rtype: pybel.dsl.abundance
-        """
-        return abundance(
+    def as_pybel_dict(self) -> pybel.dsl.Abundance:
+        """Function to serialize to PyBEL node data dictionary."""
+        return pybel.dsl.Abundance(
             namespace=CHEBI,
             name=str(self.chebi_name),
             identifier=str(self.chebi_id)
