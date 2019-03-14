@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""
-This module parsers the Reactome pathway hierarchy tab-separated table
+"""This module parsers the Reactome pathway hierarchy tab-separated table.
 
 "Pathway hierarchy relationship" file consists of two columns of Reactome Stable identifiers (ST_ID),
 defining the relationship between pathways within the pathway hierarchy.
@@ -10,34 +9,27 @@ child pathway stable identifier.
 """
 
 import pandas as pd
+from bio2bel.downloading import make_df_getter
 
-from bio2bel_reactome.constants import PATHWAYS_HIERARCHY_URL
+from bio2bel_reactome.constants import PATHWAYS_HIERARCHY_PATH, PATHWAYS_HIERARCHY_URL
 
 __all__ = [
     'get_pathway_hierarchy_df',
     'parse_pathway_hierarchy',
 ]
 
-def get_pathway_hierarchy_df(url=None):
-    """Convert tab separated txt files to pandas Dataframe.
-
-    :param Optional[str] url: url from reactome tab separated file
-    :return: dataframe of the file
-    :rtype: pandas.DataFrame
-    """
-    df = pd.read_csv(
-        url or PATHWAYS_HIERARCHY_URL,
-        sep='\t',
-        header=None
-    )
-
-    return df
+get_pathway_hierarchy_df = make_df_getter(
+    PATHWAYS_HIERARCHY_URL,
+    PATHWAYS_HIERARCHY_PATH,
+    sep='\t',
+    header=None,
+)
 
 
-def parse_pathway_hierarchy(pathway_dataframe):
+def parse_pathway_hierarchy(pathway_dataframe: pd.DataFrame):
     """Parse the pathway hierarchy dataframe.
 
-    :param pandas.DataFrame pathway_dataframe: Parent - child pathway relationships
+    :param pathway_dataframe: Parent - child pathway relationships
     :rtype: list[tuple]
     :return Relationship representation (reactome_parent_id, reactome_child_id)
     """

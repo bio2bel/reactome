@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
-"""
-This module parsers different molecular entities to pathways
+"""This module parsers different molecular entities to pathways.
 
 General file structure:
 
-Column 1) UniProt, Chebi identifier
+Column 1) UniProt, ChEBI identifier
 Column 2) Reactome Stable identifier
 Column 3) URL
 Column 4) Event (Pathway or Reaction) Name
@@ -15,9 +14,18 @@ Column 6) Species
 Column 4 and 6 are redundant since Reactome ID contains all info relative to species and event name
 """
 
-import pandas as pd
 import logging
-from bio2bel_reactome.constants import CHEBI_PATHWAYS_URL, UNIPROT_PATHWAYS_URL
+import os
+from typing import List, Optional, Tuple
+
+import pandas as pd
+
+import bio2bel_hgnc
+from bio2bel.downloading import make_df_getter
+from bio2bel_hgnc.models import HumanGene
+from bio2bel_reactome.constants import (
+    CHEBI_PATHWAYS_PATH, CHEBI_PATHWAYS_URL, UNIPROT_PATHWAYS_PATH, UNIPROT_PATHWAYS_URL,
+)
 
 __all__ = [
     'get_chemicals_pathways_df',
@@ -28,45 +36,15 @@ __all__ = [
 
 log = logging.getLogger(__name__)
 
-
-def _get_data_helper(default_url, url=None):
-    """Read csv file.
-
-    :param str default_url:
-    :param Optional[str] url:
-    :rtype: pandas.DataFrame
-    """
-    return pd.read_csv(
-        url or default_url,
-        sep='\t',
-        header=None
-    )
+get_proteins_pathways_df = make_df_getter(UNIPROT_PATHWAYS_URL, UNIPROT_PATHWAYS_PATH, sep='\t', header=None)
+get_chemicals_pathways_df = make_df_getter(CHEBI_PATHWAYS_URL, CHEBI_PATHWAYS_PATH, sep='\t', header=None)
 
 
-def get_proteins_pathways_df(url=None):
-    """Get the protein to pathways mapping.
-
-    :param Optional[str] url:
-    :rtype: pandas.DataFrame
-    """
-    return _get_data_helper(UNIPROT_PATHWAYS_URL, url=url)
-
-
-def get_chemicals_pathways_df(url=None):
-    """Get the chemicals to pathways mapping.
-
-    :param Optional[str] url:
-    :rtype: pandas.DataFrame
-    """
-    return _get_data_helper(CHEBI_PATHWAYS_URL, url=url)
-
-
-def parse_entities_pathways(entities_pathways_df, only_human=True):
+def parse_entities_pathways(entities_pathways_df: pd.DataFrame, only_human: bool = True) -> List[Tuple]:
     """Parse the entity - pathway dataframe.
 
-    :param pandas.DataFrame entities_pathways_df: File as dataframe
-    :param bool only_human: parse only human entities. Defaults to True.
-    :rtype: list[tuple]
+    :param  entities_pathways_df: File as dataframe
+    :param  only_human: parse only human entities. Defaults to True.
     :return Object representation dictionary (entity_id, reactome_id, evidence)
     """
     if only_human:
@@ -84,13 +62,8 @@ def parse_entities_pathways(entities_pathways_df, only_human=True):
     ]
 
 
-def get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id):
-    """Return HGNC symbol and id from PyHGNC query.
-
-    :param bio2bel_hgnc.Manager hgnc_manager: Manager
-    :param str uniprot_id: UniProt identifier
-    :rtype: Optional[pyhgnc.models.HGNC]
-    """
+def get_hgnc_symbol_id_by_uniprot_id(hgnc_manager: bio2bel_hgnc.Manager, uniprot_id: str) -> Optional[HumanGene]:
+    """Return HGNC symbol and id from a Bio2BEL query."""
     gene = hgnc_manager.hgnc(uniprotid=uniprot_id)
 
     if not gene:

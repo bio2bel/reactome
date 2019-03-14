@@ -2,24 +2,23 @@
 
 """This module populates the tables of bio2bel_reactome."""
 
-import logging
-from collections import Counter
-from typing import Mapping, Optional
-
-import itertools as itt
-from sqlalchemy import and_
-from tqdm import tqdm
-
 import bio2bel_chebi
 import bio2bel_hgnc
+import itertools as itt
+import logging
 from bio2bel.manager.bel_manager import BELManagerMixin
 from bio2bel.manager.flask_manager import FlaskMixin
 from bio2bel.manager.namespace_manager import BELNamespaceManagerMixin
+from collections import Counter
 from compath_utils import CompathManager
 from pybel import BELGraph
 from pybel.manager.models import NamespaceEntry
+from sqlalchemy import and_
+from tqdm import tqdm
+from typing import List, Mapping, Optional
+
 from .constants import MODULE_NAME
-from .models import Base, Chemical, Pathway, Protein, Species
+from .models import Base, Chemical, Pathway, Protein, Species, chemical_pathway, protein_pathway
 from .parsers import *
 
 log = logging.getLogger(__name__)
@@ -30,10 +29,12 @@ __all__ = [
 
 
 class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMixin):
-    """Bio2BEL Reactome manager."""
+    """Protein-pathway and chemical-pathway memberships."""
 
     module_name = MODULE_NAME
     protein_model = Protein
+    _base = Base
+    edge_model = [protein_pathway, chemical_pathway]
     namespace_model = pathway_model = Pathway
     pathway_model_identifier_column = Pathway.reactome_id
     flask_admin_models = [Pathway, Protein, Species, Chemical]
@@ -46,17 +47,13 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
         # Global dictionary
         self.pid_protein = {}
 
-    @property
-    def _base(self):
-        return Base
-
     def summarize(self) -> Mapping[str, int]:
         """Summarize the database."""
         return dict(
-            pathways=self._count_model(Pathway),
-            proteins=self._count_model(Protein),
+            pathways=self.count_pathways(),
+            proteins=self.count_proteins(),
             chemicals=self.count_chemicals(),
-            species=self.count_species()
+            species=self.count_species(),
         )
 
     def count_pathways(self) -> int:
@@ -77,27 +74,26 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
 
     """Custom query methods"""
 
-    def query_similar_pathways(self, pathway_name, top=None):
+    def query_similar_pathways(self, pathway_name: str, top: Optional[int] = None) -> List[Pathway]:
         """Filter pathways by name.
 
-        :param str pathway_name: pathway name to query
-        :param int top: return only X entries
-        :return: Optional[models.Pathway]
+        :param pathway_name: pathway name to query
+        :param top: return only X entries
         """
-        similar_pathways = self.session.query(self.pathway_model).join(Species).filter(and_(
-            self.pathway_model.name.contains(pathway_name),
-            Species.name == 'Homo sapiens')
-        ).all()
+        similar_pathways_query = (
+            self.session
+                .query(self.pathway_model.resource_id, self.pathway_model.name)
+                .join(Species)
+                .filter(and_(
+                self.pathway_model.name.contains(pathway_name),
+                Species.name == 'Homo sapiens')
+            )
+        )
 
-        similar_pathways = [
-            (pathway.resource_id, pathway.name)
-            for pathway in similar_pathways
-        ]
+        if top is None:
+            return similar_pathways_query.all()
 
-        if top:
-            return similar_pathways[:top]
-
-        return similar_pathways
+        return similar_pathways_query.limit(top).all()
 
     def query_gene_set(self, gene_set):
         """Return pathway counter dictionary.
@@ -141,7 +137,6 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
         :rtype: dict[set]
         :return: pathways' genesets
         """
-
         if species:
             pathways = self.session.query(Pathway).join(Species).filter(Species.name == species).all()
             return {
@@ -228,12 +223,11 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
 
         return pathway
 
-    def get_or_create_chemical(self, chebi_id, chebi_name):
+    def get_or_create_chemical(self, chebi_id: str, chebi_name: str) -> Chemical:
         """Get a Chemical from the database or creates it.
 
-        :param str chebi_id: identifier
-        :param str chebi_name: name
-        :rtype: Chemical
+        :param chebi_id: identifier
+        :param chebi_name: name
         """
         chemical = self.get_chemical_by_chebi_id(chebi_id)
 
@@ -577,11 +571,11 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
         if missing_hgnc_info:
             log.warning('missing %d hgncs', len(missing_hgnc_info))
 
-    def _pathway_chemical(self, url=None, only_human=True):
+    def _pathway_chemical(self, url: Optional[str] = None, only_human: bool = True) -> None:
         """Populate ChEBI tables.
 
-        :param url: Optional[str] url: url from pathway chemical file
-        :param bool only_human: only store human chemicals
+        :param url: url from pathway chemical file
+        :param  only_human: only store human chemicals
         """
         chebi_manager = bio2bel_chebi.Manager(engine=self.engine, session=self.session)
         if not chebi_manager.is_populated():
@@ -601,14 +595,15 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
                 log.debug('ChEBI identifier is None')
                 continue
 
+            chebi_id = str(chebi_id)
+
             if chebi_id in cid_chemical:
                 chemical = cid_chemical[chebi_id]
-
             else:
                 chebi_chemical = chebi_manager.get_chemical_by_chebi_id(chebi_id)
 
                 if chebi_chemical is None:
-                    log.warning('{} was not found by chebi manager'.format(chebi_id))
+                    log.warning(f'{chebi_id} was not found by the ChEBI manager')
                     continue
 
                 chemical = self.get_or_create_chemical(chebi_id, chebi_chemical.name)
@@ -617,7 +612,7 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
             pathway = self.get_pathway_by_id(reactome_id)
 
             if pathway is None:
-                log.debug('Missing reactome_id: %s', reactome_id)
+                log.debug(f'Missing Reactome identifier: {reactome_id}')
                 missing_reactome_ids.add(reactome_id)
                 continue
 
@@ -625,27 +620,25 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
                 chemical.pathways.append(pathway)
 
         if missing_reactome_ids:
-            log.warning('missing %d reactome ids', len(missing_reactome_ids))
+            log.warning(f'missing {len(missing_reactome_ids)} reactome ids')
 
         self.session.commit()
 
     def populate(
             self,
-            pathways_path=None,
-            pathways_hierarchy_path=None,
-            pathways_proteins_path=None,
-            pathways_chemicals_path=None,
-            only_human=True
-    ):
+            pathways_path: Optional[str] = None,
+            pathways_hierarchy_path: Optional[str] = None,
+            pathways_proteins_path: Optional[str] = None,
+            pathways_chemicals_path: Optional[str] = None,
+            only_human: bool = True,
+    ) -> None:
         """Populate all tables.
 
-        :param Optional[bio2bel_hgnc.manager.Manager] hgnc_manager: HGNC Manager
-        :param Optional[bio2bel_chebi.manager.Manager] chebi_manager: ChEBI Manager
-        :param Optional[str] pathways_path: url from pathway table file
-        :param Optional[str] pathways_hierarchy_path: url from pathway hierarchy file
-        :param Optional[str] pathways_proteins_path: url from pathway protein file
-        :param Optional[str] pathways_chemicals_path: url from pathway chemical file
-        :param bool only_human: only store human chemicals
+        :param pathways_path: url from pathway table file
+        :param pathways_hierarchy_path: url from pathway hierarchy file
+        :param pathways_proteins_path: url from pathway protein file
+        :param pathways_chemicals_path: url from pathway chemical file
+        :param only_human: only store human chemicals
         """
         self._populate_pathways(url=pathways_path)
         self._pathway_hierarchy(url=pathways_hierarchy_path)
@@ -668,7 +661,7 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
             column_searchable_list = (
                 Protein.hgnc_symbol,
                 Protein.uniprot_id,
-                Protein.hgnc_id
+                Protein.hgnc_id,
             )
 
         class SpeciesView(ModelView):

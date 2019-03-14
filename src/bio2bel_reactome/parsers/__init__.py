@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""This module contains multiple parsers for the Reactome public data sources"""
+"""This module contains multiple parsers for the Reactome public data sources."""
 
 from . import entity_pathways, pathway_names, pathway_hierarchy
 from .entity_pathways import *
