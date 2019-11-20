@@ -26,17 +26,18 @@ CLASSIFIERS = [
     'Topic :: Scientific/Engineering :: Bio-Informatics',
 ]
 INSTALL_REQUIRES = [
-    'click',
-    'bio2bel>=0.2.0,<0.3.0',
+    'click==7.0',
+    'bio2bel>=0.2.1',
+    'pybel==0.14.1',
+    'sqlalchemy==1.3.8',
+    'pandas==0.24.2',
     'compath_utils>=0.1.0',
     'bio2bel_hgnc>=0.1.0',
     'bio2bel_chebi>=0.1.0',
-    'pybel>=0.13.1,<0.14.0',
-    'sqlalchemy',
-    'pandas',
-    'tqdm',
-    'flask',
-    'flask_admin',
+    'bel_resources==0.0.3'
+    'tqdm==4.31.1',
+    'flask==1.1.1',
+    'flask_admin==1.5.3',
 ]
 EXTRAS_REQUIRE = {
     'web': [

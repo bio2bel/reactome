@@ -5,7 +5,7 @@ import logging
 from bio2bel_reactome.constants import PATHWAY_NAMES_URL
 from bio2bel_reactome.parsers.pathway_names import get_pathway_names_df
 from pybel.constants import NAMESPACE_DOMAIN_BIOPROCESS
-from pybel.resources.definitions import write_namespace
+from bel_resources import write_namespace
 
 log = logging.getLogger(__name__)
 
