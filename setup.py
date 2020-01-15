@@ -34,7 +34,7 @@ INSTALL_REQUIRES = [
     'compath_utils>=0.1.0',
     'bio2bel_hgnc>=0.1.0',
     'bio2bel_chebi>=0.1.0',
-    'bel_resources==0.0.3'
+    'bel_resources==0.0.3',
     'tqdm==4.31.1',
     'flask==1.1.1',
     'flask_admin==1.5.3',
