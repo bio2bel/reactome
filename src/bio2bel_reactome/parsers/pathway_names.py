@@ -35,7 +35,7 @@ def parse_pathway_names(pathway_names_df: pd.DataFrame):
     pathways = {}
     species_set = set()
 
-    for _, (reactome_id, name, species) in pathway_names_df.iterrows():
+    for reactome_id, name, species in pathway_names_df.values:
         pathways[reactome_id] = (name.strip(), species)
         species_set.add(species)
 

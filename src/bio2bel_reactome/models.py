@@ -2,12 +2,17 @@
 
 """Reactome database model."""
 
+from __future__ import annotations
+
+from typing import List
+
+from bio2bel.manager.compath import CompathPathwayMixin, CompathProteinMixin
+from bio2bel.manager.models import SpeciesMixin
 from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import backref, relationship
 
 import pybel.dsl
-from pybel.dsl import abundance
 from .constants import CHEBI, HGNC, REACTOME, UNIPROT
 
 Base = declarative_base()
@@ -37,119 +42,43 @@ chemical_pathway = Table(
 )
 
 
-class Pathway(Base):
-    """Pathway Table"""
-    __tablename__ = PATHWAY_TABLE_NAME
-
-    id = Column(Integer, primary_key=True)
-
-    reactome_id = Column(String(255), unique=True, nullable=False)
-    name = Column(String(255))
-
-    parent_id = Column(Integer, ForeignKey('{}.id'.format(PATHWAY_TABLE_NAME)))
-
-    children = relationship('Pathway', backref=backref('parent', remote_side=[id]))
-
-    species = relationship(
-        'Species',
-        backref='pathways'
-    )
-
-    species_id = Column(Integer, ForeignKey('{}.id'.format(SPECIES_TABLE_NAME)))
-
-    proteins = relationship(
-        'Protein',
-        secondary=protein_pathway,
-        backref='pathways'
-    )
-
-    chemicals = relationship(
-        'Chemical',
-        secondary=chemical_pathway,
-        backref='pathways'
-    )
-
-    def __repr__(self):
-        return self.name
-
-    def to_pybel(self) -> pybel.dsl.BiologicalProcess:
-        """Function to serialize to PyBEL node data dictionary."""
-        return pybel.dsl.BiologicalProcess(
-            namespace=REACTOME,
-            name=str(self.name),
-            identifier=str(self.reactome_id)
-        )
-
-    def get_gene_set(self):
-        """Return the genes associated with the pathway (gene set). Note this function restricts to HGNC symbols genes.
-
-        :rtype: set[bio2bel_reactome.models.Protein]
-        """
-        return {
-            protein.hgnc_symbol
-            for protein in self.proteins
-            if protein.hgnc_symbol
-        }
-
-    @property
-    def resource_id(self):
-        return self.reactome_id
-
-    @property
-    def url(self):
-        return 'https://reactome.org/content/detail/{}'.format(self.reactome_id)
-
-
-class Species(Base):
-    """Species Table"""
+class Species(Base, SpeciesMixin):
+    """Species Table."""
 
     __tablename__ = SPECIES_TABLE_NAME
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(255), nullable=False)
 
-    def __repr__(self):
-        return self.name
+class Protein(Base, CompathProteinMixin):
+    """Protein Table."""
 
-
-class Protein(Base):
-    """Protein Table"""
     __tablename__ = PROTEIN_TABLE_NAME
-
     id = Column(Integer, primary_key=True)
 
     uniprot_id = Column(String(64), unique=True, nullable=False, index=True)
+    uniprot_accession = Column(String(64), unique=True, nullable=False, index=True)
 
     # Only for Human Genes
     hgnc_symbol = Column(String(64), nullable=True)
     hgnc_id = Column(String(64), nullable=True)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.uniprot_id
 
     def to_pybel(self) -> pybel.dsl.Protein:
         """Function to serialize to PyBEL node data dictionary."""
-
         if self.hgnc_symbol and self.hgnc_id:
             return pybel.dsl.Protein(
                 namespace=HGNC,
-                name=str(self.hgnc_symbol),
-                identifier=str(self.hgnc_id)
+                identifier=self.hgnc_id,
+                name=self.hgnc_symbol,
             )
 
         else:
             return pybel.dsl.Protein(
                 namespace=UNIPROT,
-                name=str(self.uniprot_id),
-                identifier=str(self.uniprot_id)
+                identifier=self.uniprot_id,
+                name=self.uniprot_id,
             )
-
-    def get_pathways_ids(self):
-        """Return the pathways associated with the protein."""
-        return {
-            pathway.reactome_id
-            for pathway in self.pathways
-        }
 
 
 class Chemical(Base):
@@ -159,15 +88,37 @@ class Chemical(Base):
     id = Column(Integer, primary_key=True)
 
     chebi_id = Column(String(64), unique=True, nullable=False)
-    chebi_name = Column(String(4096))
+    name = Column(String(4096))
+
+    pathways: List[Pathway]
 
     def __repr__(self):
         return self.chebi_id
 
-    def as_pybel_dict(self) -> pybel.dsl.Abundance:
+    def to_pybel(self) -> pybel.dsl.Abundance:
         """Function to serialize to PyBEL node data dictionary."""
         return pybel.dsl.Abundance(
             namespace=CHEBI,
-            name=str(self.chebi_name),
-            identifier=str(self.chebi_id)
+            identifier=self.chebi_id,
+            name=self.name,
         )
+
+
+class Pathway(Base, CompathPathwayMixin):
+    """A reactome pathway."""
+
+    __tablename__ = PATHWAY_TABLE_NAME
+    id = Column(Integer, primary_key=True)
+
+    prefix = REACTOME
+    identifier = Column(String(255), unique=True, nullable=False)
+    name = Column(String(255))
+
+    parent_id = Column(Integer, ForeignKey(f'{PATHWAY_TABLE_NAME}.id'))
+    children = relationship('Pathway', backref=backref('parent', remote_side=[id]))
+
+    species = relationship(Species, backref='pathways')
+    species_id = Column(Integer, ForeignKey(f'{Species.__tablename__}.id'))
+
+    proteins = relationship(Protein, secondary=protein_pathway, backref='pathways')
+    chemicals = relationship(Chemical, secondary=chemical_pathway, backref='pathways')

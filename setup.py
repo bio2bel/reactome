@@ -21,28 +21,21 @@ CLASSIFIERS = [
     'Operating System :: OS Independent',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3 :: Only',
-    'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
     'Topic :: Scientific/Engineering :: Bio-Informatics',
 ]
 INSTALL_REQUIRES = [
-    'click==7.0',
-    'bio2bel>=0.2.1',
-    'pybel==0.14.1',
-    'sqlalchemy==1.3.8',
-    'pandas==0.24.2',
-    'compath_utils>=0.1.0',
-    'bio2bel_hgnc>=0.1.0',
-    'bio2bel_chebi>=0.1.0',
-    'bel_resources==0.0.3',
-    'tqdm==4.31.1',
-    'flask==1.1.1',
-    'flask_admin==1.5.3',
+    'click',
+    'bio2bel>=0.3.3',
+    'pybel>=0.14.1',
+    'sqlalchemy',
+    'pandas',
+    'tqdm',
 ]
 EXTRAS_REQUIRE = {
     'web': [
-        'flask',
-        'flask_admin',
+        'flask==1.1.1',
+        'flask_admin==1.5.3',
     ],
     'docs': [
         'sphinx',

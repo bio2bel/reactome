@@ -42,7 +42,7 @@ class TestGlobal(DatabaseMixin):
         adp_chebi = self.manager.get_chemical_by_chebi_id('16761')
 
         self.assertEqual(
-            adp_chebi.as_pybel_dict(),
+            adp_chebi.to_pybel(),
             abundance(namespace=CHEBI, name='ADP', identifier='16761')
         )
 

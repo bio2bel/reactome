@@ -4,11 +4,11 @@ import logging
 import os
 
 import click
+from bio2bel.manager.compath import dict_to_df
 
 from .manager import Manager
-from .utils import dict_to_pandas_df
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 main = Manager.get_cli()
 
@@ -19,14 +19,12 @@ main = Manager.get_cli()
 @click.option('-hierarchy', '--top-hierarchy', is_flag=True, help="Extract only the highest level in the hierarchy")
 def export(connection, species, top_hierarchy):
     """Export all pathway - gene info to a excel file"""
-    m = Manager(connection=connection)
+    manager = Manager(connection=connection)
 
-    log.info("Querying the database")
+    logger.info("Querying the database")
+    genesets = dict_to_df(manager.export_gene_sets(species=species, top_hierarchy=top_hierarchy))
 
-    genesets = dict_to_pandas_df(m.export_gene_sets(species=species, top_hierarchy=top_hierarchy))
-
-    log.info("Geneset exported to '{}/reactome_gene_sets.xlsx'".format(os.getcwd()))
-
+    logger.info("Geneset exported to '{}/reactome_gene_sets.xlsx'".format(os.getcwd()))
     genesets.to_excel('reactome_gene_sets.xlsx', index=False)
 
 
