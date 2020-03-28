@@ -11,7 +11,7 @@ import pandas as pd
 from sqlalchemy import and_
 from tqdm import tqdm
 
-from bio2bel.manager.compath import CompathManager
+from bio2bel.compath import CompathManager
 from pybel import BELGraph
 from pyobo import get_name_id_mapping
 from .constants import MODULE_NAME, SPECIES_REMAPPING
@@ -132,7 +132,7 @@ class Manager(CompathManager):
 
         return enrichment_results
 
-    def export_gene_sets(
+    def get_pathway_name_to_symbols(
         self,
         top_hierarchy: Optional[bool] = None,
     ) -> Mapping[str, Set[str]]:

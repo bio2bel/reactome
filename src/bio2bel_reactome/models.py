@@ -6,13 +6,13 @@ from __future__ import annotations
 
 from typing import List
 
-from bio2bel.manager.compath import CompathPathwayMixin, CompathProteinMixin
-from bio2bel.manager.models import SpeciesMixin
 from sqlalchemy import Column, ForeignKey, Integer, String, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import backref, relationship
 
 import pybel.dsl
+from bio2bel.compath import CompathPathwayMixin, CompathProteinMixin
+from bio2bel.manager.models import SpeciesMixin
 from .constants import CHEBI, HGNC, REACTOME, UNIPROT
 
 Base = declarative_base()
