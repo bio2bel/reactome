@@ -8,7 +8,7 @@ The "Complete list of pathways" file maps the Reactome Stable identifier (ST_ID)
 import pandas as pd
 
 from bio2bel.downloading import make_df_getter
-from bio2bel_reactome.constants import PATHWAY_NAMES_PATH, PATHWAY_NAMES_URL
+from ..constants import PATHWAY_NAMES_PATH, PATHWAY_NAMES_URL
 
 __all__ = [
     'get_pathway_names_df',

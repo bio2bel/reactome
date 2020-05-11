@@ -11,7 +11,7 @@ child pathway stable identifier.
 import pandas as pd
 from bio2bel.downloading import make_df_getter
 
-from bio2bel_reactome.constants import PATHWAYS_HIERARCHY_PATH, PATHWAYS_HIERARCHY_URL
+from ..constants import PATHWAYS_HIERARCHY_PATH, PATHWAYS_HIERARCHY_URL
 
 __all__ = [
     'get_pathway_hierarchy_df',
