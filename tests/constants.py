@@ -6,10 +6,7 @@ import os
 import tempfile
 import unittest
 
-from bio2bel_chebi import Manager as ChebiManager
-from bio2bel_hgnc import Manager as HgncManager
-
-from bio2bel_reactome.manager import Manager
+import bio2bel_reactome
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 resources_path = os.path.join(dir_path, 'resources')
@@ -36,17 +33,7 @@ class DatabaseMixin(unittest.TestCase):
         cls.connection = 'sqlite:///' + cls.path
 
         # create temporary database
-        cls.manager = Manager(cls.connection)
-
-        """HGNC Manager"""
-
-        hgnc_manager = HgncManager(engine=cls.manager.engine, session=cls.manager.session)
-        hgnc_manager.populate(hgnc_file_path=hgnc_test_path,hcop_file_path=hcop_test_path)
-
-        """CHEBI Manager"""
-
-        chebi_manager = ChebiManager(engine=cls.manager.engine, session=cls.manager.session)
-        chebi_manager._populate_compounds(url=chebi_test_path)
+        cls.manager = bio2bel_reactome.Manager(cls.connection)
 
         """Reactome Manager"""
         # fill temporary database with test data
@@ -55,7 +42,6 @@ class DatabaseMixin(unittest.TestCase):
             pathways_hierarchy_path=pathway_hierarchy,
             pathways_proteins_path=proteins_to_reactome,
             pathways_chemicals_path=chemicals_to_reactome,
-            only_human=False
         )
 
     @classmethod

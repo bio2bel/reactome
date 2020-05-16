@@ -6,7 +6,6 @@ import logging
 from collections import Counter, defaultdict
 from typing import Dict, List, Mapping, Optional, Set
 
-import itertools as itt
 import pandas as pd
 from sqlalchemy import and_
 from tqdm import tqdm
@@ -101,40 +100,6 @@ class Manager(CompathManager):
 
         return query.limit(top).all()
 
-    def query_gene_set(self, gene_set):
-        """Return pathway counter dictionary.
-
-        :param list[str] gene_set: gene set to be queried
-        :rtype: dict[str,dict]]
-        :return: Enriched pathways with mapped pathways/total
-        """
-        proteins = self._query_proteins_in_hgnc_list(gene_set)
-
-        pathways_lists = [
-            protein.get_pathways_ids()
-            for protein in proteins
-        ]
-
-        # Flat the pathways lists and applies Counter to get the number matches in every mapped pathway
-        pathway_counter = Counter(itt.chain(*pathways_lists))
-
-        enrichment_results = dict()
-
-        for pathway_reactome_id, proteins_mapped in pathway_counter.items():
-            pathway = self.get_pathway_by_id(pathway_reactome_id)
-
-            pathway_gene_set = pathway.get_gene_set()  # Pathway gene set
-
-            enrichment_results[pathway.reactome_id] = {
-                "pathway_id": pathway.reactome_id,
-                "pathway_name": pathway.name,
-                "mapped_proteins": proteins_mapped,
-                "pathway_size": len(pathway_gene_set),
-                "pathway_gene_set": pathway_gene_set,
-            }
-
-        return enrichment_results
-
     def get_pathway_name_to_symbols(
         self,
         top_hierarchy: Optional[bool] = None,
@@ -225,6 +190,7 @@ class Manager(CompathManager):
         :param reactome_id: pathway identifier
         :param name: name of the pathway
         :param species: Species object
+        :param chemicals: An optional list of chemicals that belong too this pathway
         """
         pathway = self.get_pathway_by_id(reactome_id)
 
@@ -320,51 +286,6 @@ class Manager(CompathManager):
             for pathway in pathways
         }
 
-    def get_all_hgnc_symbols(self):
-        """Return the set of genes present in all Reactome Pathways.
-
-        :rtype: set
-        """
-        return {
-            gene.hgnc_symbol
-            for pathway in self.get_human_pathways()
-            for gene in pathway.proteins
-            if pathway.proteins
-        }
-
-    def get_pathway_size_distribution(self, only_human: bool = False):
-        """Return pathway sizes.
-
-        :rtype: dict
-        :return: pathway sizes
-        """
-        if only_human:
-            pathways = self.get_human_pathways()
-        else:
-            pathways = self.get_all_pathways()
-
-        return {
-            pathway.identifier: (pathway.name, len(pathway.proteins))
-            for pathway in pathways
-            if pathway.proteins
-        }
-
-    def get_pathway_by_name(self, pathway_name: str, species_name: Optional[str] = None) -> Optional[Pathway]:
-        """Get a pathway by name."""
-        results = self.session.query(Pathway).filter(Pathway.name == pathway_name).all()
-
-        if not results:
-            return None
-
-        if not species_name:
-            species_name = 'Homo sapiens'
-
-        for pathway in results:
-            if pathway.species.name == species_name:
-                return pathway
-
-        return None
-
     def get_pathway_parent_by_id(self, reactome_id: str) -> Optional[Pathway]:
         """Get parent pathway by its reactome id.
 
@@ -387,7 +308,7 @@ class Manager(CompathManager):
         if not pathway.parent:
             return pathway
 
-        return self.get_top_hiearchy_parent_by_id(pathway.parent.reactome_id)
+        return self.get_top_hiearchy_parent_by_id(pathway.parent.identifier)
 
     def get_all_top_hierarchy_pathways(self) -> List[Pathway]:
         """Get all pathways without a parent (top hierarchy)."""
@@ -398,10 +319,6 @@ class Manager(CompathManager):
             for pathway in all_pathways
             if not pathway.parent_id
         ]
-
-    def get_all_pathway_names(self) -> Set[str]:
-        """Get all pathway names stored in the database."""
-        return set(self.session.query(Pathway.name))
 
     def get_human_pathways(self) -> List[Pathway]:
         """Get human pathways."""

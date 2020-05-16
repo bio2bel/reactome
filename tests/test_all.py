@@ -2,8 +2,6 @@
 
 """This module contains the tests related with the graph enrichment."""
 
-from bio2bel_chebi.manager import Manager as ChebiManager
-from bio2bel_chebi.models import Chemical
 from bio2bel_reactome.constants import CHEBI, UNIPROT
 from bio2bel_reactome.models import Chemical
 from pybel.dsl import abundance, protein
@@ -103,7 +101,7 @@ class TestGlobal(DatabaseMixin):
         self.assertIsNotNone(granfather)
 
         childrens = {
-            children.reactome_id
+            children.identifier
             for children in granfather.children
         }
 
@@ -132,7 +130,7 @@ class TestGlobal(DatabaseMixin):
         """Tests get pathway by name method"""
         child = self.manager.get_pathway_by_name('CD28 dependent PI3K/Akt signaling', 'Homo sapiens')
         self.assertIsNotNone(child, msg='Pathway not found')
-        self.assertEqual('R-HSA-389356', child.parent.reactome_id)
+        self.assertEqual('R-HSA-389356', child.parent.identifier)
 
     def test_hierarchy_3(self):
         """Tests get_pathway_parent_by_id by name method"""
@@ -144,7 +142,7 @@ class TestGlobal(DatabaseMixin):
         """Tests get top hierarchy method by finding the top member of the hierarchy"""
         granfather = self.manager.get_top_hiearchy_parent_by_id('R-HSA-389359')
         self.assertIsNotNone(granfather, msg='Pathway not found')
-        self.assertEqual('R-HSA-388841', granfather.reactome_id)
+        self.assertEqual('R-HSA-388841', granfather.identifier)
 
     def test_top_hierarchy(self):
         """Tests get all top hierarchy members"""
@@ -158,21 +156,15 @@ class TestGlobal(DatabaseMixin):
         bos_taurus_cd29_pathway = self.manager.get_pathway_by_name('CD28 dependent PI3K/Akt signaling', 'Bos taurus')
         self.assertIsNotNone(bos_taurus_cd29_pathway, msg='Pathway not found')
 
-        self.assertEqual('R-BTA-389357', bos_taurus_cd29_pathway.reactome_id)
+        self.assertEqual('R-BTA-389357', bos_taurus_cd29_pathway.identifier)
 
         sativa_cd29_pathway = self.manager.get_pathway_by_name('CD28 dependent PI3K/Akt signaling', 'Oryza sativa')
         self.assertIsNotNone(sativa_cd29_pathway, msg='Pathway not found')
 
-        self.assertEqual('R-OSA-389357', sativa_cd29_pathway.reactome_id)
+        self.assertEqual('R-OSA-389357', sativa_cd29_pathway.identifier)
 
         self.assertEqual(sativa_cd29_pathway.name, bos_taurus_cd29_pathway.name)
         self.assertNotEqual(sativa_cd29_pathway.species.name, bos_taurus_cd29_pathway.species.name)
-
-    def test_chebi_parser(self):
-        chebi_manager = ChebiManager(connection=self.connection)
-
-        all_chemicals = chebi_manager.session.query(Chemical).all()
-        self.assertEqual(4, len(all_chemicals))
 
     def test_gene_query_1(self):
         """Single protein query. This protein is associated with 3 pathways"""
