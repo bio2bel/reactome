@@ -100,7 +100,7 @@ class Manager(CompathManager):
 
         return query.limit(top).all()
 
-    def get_pathway_name_to_symbols(
+    def get_pathway_name_to_hgnc_symbols(
         self,
         top_hierarchy: Optional[bool] = None,
         only_human: bool = False,
@@ -146,7 +146,7 @@ class Manager(CompathManager):
             if pathway.proteins
         }
 
-    def get_gene_distribution(self):
+    def get_hgnc_symbol_distribution(self):
         """Return the proteins in the database within the gene set query.
 
         :rtype: collections.Counter
