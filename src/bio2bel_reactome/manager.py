@@ -16,10 +16,9 @@ from pybel import BELGraph
 from pyobo import get_name_id_mapping
 from .constants import MODULE_NAME, SPECIES_REMAPPING
 from .models import Base, Chemical, Pathway, Protein, Species, chemical_pathway, protein_pathway
-from .parsers import (
-    get_pathway_hierarchy_df, get_pathway_names_df, get_procesed_chemical_pathways_df,
-    get_procesed_proteins_pathways_df, parse_pathway_hierarchy, parse_pathway_names,
-)
+from .parsers.entity_pathways import get_procesed_chemical_pathways_df, get_procesed_proteins_pathways_df
+from .parsers.pathway_hierarchy import get_pathway_hierarchy_df, parse_pathway_hierarchy
+from .parsers.pathway_names import get_pathway_names_df, parse_pathway_names
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +39,8 @@ class Manager(CompathManager):
 
     has_hierarchy = True  # Indicates that this manager can handle hierarchies with the Pathway Model
 
-    def __init__(self, *args, only_human: bool = False, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.only_human = only_human
         # Global dictionary
         self.uniprot_id_to_protein: Dict[str, Protein] = {}
         self.chebi_id_to_chemical: Dict[str, Chemical] = {}
@@ -74,7 +72,12 @@ class Manager(CompathManager):
 
     """Custom query methods"""
 
-    def query_similar_pathways(self, pathway_name: str, top: Optional[int] = None) -> List[Pathway]:
+    def query_similar_pathways(
+        self,
+        pathway_name: str,
+        top: Optional[int] = None,
+        only_human: bool = False,
+    ) -> List[Pathway]:
         """Filter pathways by name.
 
         :param pathway_name: pathway name to query
@@ -82,7 +85,7 @@ class Manager(CompathManager):
         """
         query = self.session.query(self.pathway_model.identifier, self.pathway_model.name)
 
-        if self.only_human:
+        if only_human:
             _filter = and_(
                 self.pathway_model.name.contains(pathway_name),
                 Species.name == 'Homo sapiens',
@@ -135,6 +138,7 @@ class Manager(CompathManager):
     def get_pathway_name_to_symbols(
         self,
         top_hierarchy: Optional[bool] = None,
+        only_human: bool = False,
     ) -> Mapping[str, Set[str]]:
         """Return pathway - genesets mapping
 
@@ -143,7 +147,7 @@ class Manager(CompathManager):
         :rtype: dict[set]
         :return: pathways' genesets
         """
-        if self.only_human:
+        if only_human:
             pathways = self.get_human_pathways()
             return {
                 pathway.name: {
@@ -191,9 +195,9 @@ class Manager(CompathManager):
             if protein.hgnc_symbol
         )
 
-    def get_gene_sets(self) -> Mapping[str, Set[str]]:
+    def get_gene_sets(self, only_human: bool = False) -> Mapping[str, Set[str]]:
         """Return pathway - genesets mapping."""
-        if self.only_human:
+        if only_human:
             pathways = self.get_human_pathways()
         else:
             pathways = self.get_all_pathways()
@@ -301,12 +305,12 @@ class Manager(CompathManager):
         """
         return self.session.query(Species).filter(Species.name == species_name).one_or_none()
 
-    def get_pathway_names_to_ids(self):
+    def get_pathway_names_to_ids(self, only_human: bool = False):
         """Return a dictionary of pathway names to ids
 
         :rtype: dict[str,str]
         """
-        if self.only_human:
+        if only_human:
             pathways = self.get_human_pathways()
         else:
             pathways = self.get_all_pathways()
@@ -328,13 +332,13 @@ class Manager(CompathManager):
             if pathway.proteins
         }
 
-    def get_pathway_size_distribution(self):
+    def get_pathway_size_distribution(self, only_human: bool = False):
         """Return pathway sizes.
 
         :rtype: dict
         :return: pathway sizes
         """
-        if self.only_human:
+        if only_human:
             pathways = self.get_human_pathways()
         else:
             pathways = self.get_all_pathways()
@@ -413,7 +417,7 @@ class Manager(CompathManager):
         return filtered_species.pathways
 
     def get_chemical_by_chebi_id(self, chebi_id: str) -> Optional[Chemical]:
-        """Get chemical by CHEBI id."""
+        """Get chemical by ChEBI id."""
         return self.session.query(Chemical).filter(Chemical.chebi_id == chebi_id).one_or_none()
 
     def get_protein_by_uniprot_id(self, uniprot_id: str) -> Optional[Protein]:
@@ -461,7 +465,7 @@ class Manager(CompathManager):
                 reactome_id=reactome_id,
                 name=name,
                 species=species_name_to_model[species_name],
-                chemicals=chemical_mapping.get(reactome_id),
+                chemicals=chemical_mapping.get(reactome_id, []),
             )
             self.session.add(pathway)
 
@@ -496,17 +500,14 @@ class Manager(CompathManager):
 
         :param url: url from pathway protein file
         """
-        rv = {}
-
-        uniprot_df = get_procesed_proteins_pathways_df(url=url)
-        if self.only_human:
-            uniprot_df = uniprot_df[uniprot_df['species'] == 'Homo sapiens']
+        pathways_proteins_df = get_procesed_proteins_pathways_df(url=url)
 
         missing_reactome_ids = set()
         missing_hgnc_info = set()
 
-        protein_info_df = uniprot_df[['uniprot_id', 'uniprot_accession', 'hgnc_id', 'hgnc_symbol']].drop_duplicates()
-        it = tqdm(protein_info_df.values, total=len(protein_info_df.index), descp='populating proteins')
+        protein_info_df = pathways_proteins_df[
+            ['uniprot_id', 'uniprot_accession', 'hgnc_id', 'hgnc_symbol']].drop_duplicates()
+        it = tqdm(protein_info_df.values, total=len(protein_info_df.index), desc='populating proteins')
         for uniprot_id, uniprot_accession, hgnc_id, hgnc_symbol in it:
             self.uniprot_id_to_protein[uniprot_id] = Protein(
                 uniprot_id=uniprot_id,
@@ -515,8 +516,12 @@ class Manager(CompathManager):
                 hgnc_symbol=hgnc_symbol,
             )
 
-        it = tqdm(uniprot_df, desc='populating proteins-pathway relations')
-        for uniprot_id, reactome_id, evidence in it:
+        it = tqdm(
+            pathways_proteins_df[['uniprot_id', 'reactome_id']].values,
+            total=len(pathways_proteins_df.index),
+            desc='populating proteins-pathway relations',
+        )
+        for uniprot_id, reactome_id in it:
             if uniprot_id is None:
                 logger.debug('uniprot_id is none')
                 continue
@@ -546,9 +551,6 @@ class Manager(CompathManager):
         :param url: url from pathway chemical file
         """
         chemical_pathways_df = get_procesed_chemical_pathways_df(url=url)
-        if self.only_human:
-            chemical_pathways_df = chemical_pathways_df[chemical_pathways_df['species'] == 'Homo sapiens']
-
         chemicals_df = chemical_pathways_df[['chebi_id', 'chebi_name']].drop_duplicates()
         it = tqdm(chemicals_df.values, total=len(chemicals_df.index), desc='populating chemicals')
         chebi_id_to_chemical = {}
@@ -558,8 +560,12 @@ class Manager(CompathManager):
             chebi_id_to_chemical[chebi_id] = Chemical(chebi_id=chebi_id, name=chebi_name)
 
         rv = defaultdict(list)
-        _df = chemical_pathways_df[['chebi_id', 'reactome_id']].drop_duplicates().values
-        it = tqdm(_df, total=len(_df.index), desc='populating chemical/reactome')
+        _slim_chemical_pathways_df = chemical_pathways_df[['chebi_id', 'reactome_id']].drop_duplicates()
+        it = tqdm(
+            _slim_chemical_pathways_df.values,
+            total=len(_slim_chemical_pathways_df.index),
+            desc='populating chemical/reactome',
+        )
         for chebi_id, reactome_id in it:
             chemical = chebi_id_to_chemical[chebi_id]
             rv[reactome_id].append(chemical)

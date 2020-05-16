@@ -15,4 +15,4 @@ Citation
   PMC. Web. 6 Oct. 2017.
 """
 
-from .manager import Manager
+from .manager import Manager  # noqa:F401

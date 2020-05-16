@@ -55,7 +55,7 @@ class Protein(Base, CompathProteinMixin):
     id = Column(Integer, primary_key=True)
 
     uniprot_id = Column(String(64), unique=True, nullable=False, index=True)
-    uniprot_accession = Column(String(64), unique=True, nullable=False, index=True)
+    uniprot_accession = Column(String(64), nullable=True)
 
     # Only for Human Genes
     hgnc_symbol = Column(String(64), nullable=True)
