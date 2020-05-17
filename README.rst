@@ -10,8 +10,9 @@ If you find this package useful, please consider citing [domingofernandez2018]_:
    and curating mappings across pathway databases <https://doi.org/10.1038/s41540-018-0078-8>`_.
    *Npj Systems Biology and Applications*, **5**(1), 3.
 
-**Warning** This package creates ``partOf`` relationships in BEL, but does not convert Reactome
-to BEL. That functionality is implemented in the `PathMe project <https://github.com/pathwaymerger/pathme>`_.
+**Warning** This package creates ``partOf`` relationships in BEL, but does not convert Reactome mechanistic
+relationships to BEL. That functionality is implemented in the
+`PathMe project <https://github.com/pathwaymerger/pathme>`_.
 
 Installation |pypi_version| |python_versions| |pypi_license|
 ------------------------------------------------------------
@@ -22,7 +23,7 @@ following code in your favorite terminal:
 
     $ pip install bio2bel_reactome
 
-or from the latest code on `GitHub <https://github.com/bio2bel/reactome>`_ with:
+or from the latest code on `GitHub <https://github.com/bio2bel/reactome>`_ in development mode with:
 
 .. code-block:: sh
 
