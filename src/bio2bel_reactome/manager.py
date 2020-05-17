@@ -65,7 +65,7 @@ class Manager(CompathManager):
         if only_human:
             pathways = self.get_human_pathways()
         else:
-            pathways = self.get_all_pathways()
+            pathways = self.list_pathways()
 
         return {
             pathway.name: {
@@ -179,7 +179,7 @@ class Manager(CompathManager):
         if only_human:
             pathways = self.get_human_pathways()
         else:
-            pathways = self.get_all_pathways()
+            pathways = self.list_pathways()
 
         return {
             pathway.name: pathway.identifier
@@ -212,7 +212,7 @@ class Manager(CompathManager):
 
     def get_all_top_hierarchy_pathways(self) -> List[Pathway]:
         """Get all pathways without a parent (top hierarchy)."""
-        all_pathways = self.get_all_pathways()
+        all_pathways = self.list_pathways()
 
         return [
             pathway

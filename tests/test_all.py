@@ -157,20 +157,11 @@ class TestGlobal(DatabaseMixin):
         # Only 12 pathways are in the highest hierarchy level
         self.assertEqual(len(main_pathways), 12)
 
-    def test_get_pathway_by_name(self):
-        """Tests get get pathway name 2"""
+    def test_get_pathway_by_id(self):
+        """Test get get pathway name 2."""
         bos_taurus_cd29_pathway = self.reactome_manager.get_pathway_by_id('R-BTA-389357')
         self.assertIsNotNone(bos_taurus_cd29_pathway, msg='Pathway not found')
         self.assertEqual('R-BTA-389357', bos_taurus_cd29_pathway.identifier)
-
-        sativa_cd29_pathway = self.reactome_manager.get_pathways_by_name_species(
-            'CD28 dependent PI3K/Akt signaling', 'Oryza sativa',
-        )
-        self.assertIsNotNone(sativa_cd29_pathway, msg='Pathway not found')
-        self.assertEqual('R-OSA-389357', sativa_cd29_pathway.identifier)
-
-        self.assertEqual(sativa_cd29_pathway.name, bos_taurus_cd29_pathway.name)
-        self.assertNotEqual(sativa_cd29_pathway.species.name, bos_taurus_cd29_pathway.species.name)
 
     def test_gene_query_1(self):
         """Single protein query. This protein is associated with 3 pathways"""
@@ -178,11 +169,11 @@ class TestGlobal(DatabaseMixin):
         protein = self.reactome_manager.get_protein_by_hgnc_symbol(hgnc_gene_symbol)
         self.assertIsNotNone(protein)
 
-        enriched_pathways = self.reactome_manager.query_hgnc_gene_symbols([
+        enriched_pathways = self.reactome_manager.query_hgnc_symbols([
             hgnc_gene_symbol,
         ])
         self.assertIsNotNone(enriched_pathways, msg='Enriching function is not working')
-        self.assertLessEqual(0, len(enriched_pathways), msg='No results found')
+        self.assertLess(0, len(enriched_pathways), msg='No results found')
 
         self.assertIn("R-HSA-389359", enriched_pathways)
         self.assertEqual(
@@ -230,9 +221,9 @@ class TestGlobal(DatabaseMixin):
 
     def test_gene_query_2(self):
         """Multiple protein query"""
-        enriched_pathways = self.reactome_manager.query_hgnc_gene_symbols(['HGNC_SYMBOL_3', 'HGNC_SYMBOL_5'])
+        enriched_pathways = self.reactome_manager.query_hgnc_symbols(['HGNC_SYMBOL_3', 'HGNC_SYMBOL_5'])
         self.assertIsNotNone(enriched_pathways, msg='Enriching function is not working')
-        self.assertLessEqual(0, len(enriched_pathways), msg='No results found')
+        self.assertLess(0, len(enriched_pathways), msg='No results found')
 
         self.assertIn('R-RNO-389357', enriched_pathways)
         self.assertEqual(
@@ -278,9 +269,9 @@ class TestGlobal(DatabaseMixin):
 
     def test_gene_query_3(self):
         """Multiple protein query"""
-        enriched_pathways = self.reactome_manager.query_hgnc_gene_symbols(['HGNC_SYMBOL_3', 'HGNC_SYMBOL_1'])
+        enriched_pathways = self.reactome_manager.query_hgnc_symbols(['HGNC_SYMBOL_3', 'HGNC_SYMBOL_1'])
         self.assertIsNotNone(enriched_pathways, msg='Enriching function is not working')
-        self.assertLessEqual(0, len(enriched_pathways), msg='No results found')
+        self.assertLess(0, len(enriched_pathways), msg='No results found')
 
         self.assertIn('R-RNO-389357', enriched_pathways)
         self.assertEqual(
