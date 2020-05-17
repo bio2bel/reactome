@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-""" This module contains all test constants"""
+"""Test constants for Bio2BEL Reactome."""
 
 import os
-import tempfile
-import unittest
 
 import bio2bel_reactome
+from bio2bel.testing import TemporaryConnectionMixin
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 resources_path = os.path.join(dir_path, 'resources')
@@ -16,28 +15,20 @@ pathway_hierarchy = os.path.join(resources_path, 'ReactomePathwaysRelation.txt')
 proteins_to_reactome = os.path.join(resources_path, 'UniProt2Reactome_All_Levels.txt')
 chemicals_to_reactome = os.path.join(resources_path, 'ChEBI2Reactome_All_Levels.txt')
 
-hgnc_test_path = os.path.join(resources_path, 'hgnc_test.json')
-hcop_test_path = os.path.join(resources_path, 'hcop_test.txt')
 
-chebi_test_path = os.path.join(resources_path, 'chebi_test.tsv.gz')
+class DatabaseMixin(TemporaryConnectionMixin):
+    """Load the database before each test."""
 
+    reactome_manager: bio2bel_reactome.Manager
 
-class DatabaseMixin(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        """Create temporary file"""
+        """Create a temporary file and populate the database."""
+        super().setUpClass()
 
-        """Create temporary file"""
-
-        cls.fd, cls.path = tempfile.mkstemp()
-        cls.connection = 'sqlite:///' + cls.path
-
-        # create temporary database
-        cls.manager = bio2bel_reactome.Manager(cls.connection)
-
-        """Reactome Manager"""
-        # fill temporary database with test data
-        cls.manager.populate(
+        # Reactome manager
+        cls.reactome_manager = bio2bel_reactome.Manager(connection=cls.connection)
+        cls.reactome_manager.populate(
             pathways_path=pathways,
             pathways_hierarchy_path=pathway_hierarchy,
             pathways_proteins_path=proteins_to_reactome,
@@ -46,9 +37,6 @@ class DatabaseMixin(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        """Closes the connection in the manager and deletes the temporary database"""
-        cls.manager.drop_all()
-        cls.manager.session.close()
-
-        os.close(cls.fd)
-        os.remove(cls.path)
+        """Close the connection in the manager and deletes the temporary database."""
+        cls.reactome_manager.session.close()
+        super().tearDownClass()
