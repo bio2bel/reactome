@@ -3,11 +3,10 @@
 """This module populates the tables of bio2bel_reactome."""
 
 import logging
-from collections import Counter, defaultdict
+from collections import defaultdict
 from typing import Dict, List, Mapping, Optional, Set
 
 import pandas as pd
-from sqlalchemy import and_
 from tqdm import tqdm
 
 from bio2bel.compath import CompathManager
@@ -38,7 +37,7 @@ class Manager(CompathManager):
 
     has_hierarchy = True  # Indicates that this manager can handle hierarchies with the Pathway Model
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:  # noqa: D107
         super().__init__(*args, **kwargs)
         # Global dictionary
         self.uniprot_id_to_protein: Dict[str, Protein] = {}
@@ -46,119 +45,20 @@ class Manager(CompathManager):
 
     def summarize(self) -> Mapping[str, int]:
         """Summarize the database."""
-        return dict(
-            pathways=self.count_pathways(),
-            proteins=self.count_proteins(),
-            chemicals=self.count_chemicals(),
-            species=self.count_species(),
-        )
-
-    def count_pathways(self) -> int:
-        """Count the pathways in the database."""
-        return self.session.query(Pathway).count()
+        return {
+            'pathways': self.count_pathways(),
+            'proteins': self.count_proteins(),
+            'chemicals': self.count_chemicals(),
+            'species': self.count_species(),
+        }
 
     def count_chemicals(self) -> int:
         """Count the chemicals in the database."""
         return self.session.query(Chemical).count()
 
-    def count_proteins(self) -> int:
-        """Count the proteins in the database."""
-        return self.session.query(Protein).count()
-
     def count_species(self) -> int:
         """Count the species in the database."""
         return self.session.query(Species).count()
-
-    """Custom query methods"""
-
-    def query_similar_pathways(
-        self,
-        pathway_name: str,
-        top: Optional[int] = None,
-        only_human: bool = False,
-    ) -> List[Pathway]:
-        """Filter pathways by name.
-
-        :param pathway_name: pathway name to query
-        :param top: return only X entries
-        """
-        query = self.session.query(self.pathway_model.identifier, self.pathway_model.name)
-
-        if only_human:
-            _filter = and_(
-                self.pathway_model.name.contains(pathway_name),
-                Species.name == 'Homo sapiens',
-            )
-            query = query.join(Species).filter(_filter)
-
-        else:
-            _filter = self.pathway_model.name.contains(pathway_name)
-            query = query.filter(_filter)
-
-        if top is None:
-            return query.all()
-
-        return query.limit(top).all()
-
-    def get_pathway_name_to_hgnc_symbols(
-        self,
-        top_hierarchy: Optional[bool] = None,
-        only_human: bool = False,
-    ) -> Mapping[str, Set[str]]:
-        """Return pathway - genesets mapping
-
-        :param species: pathways specific to a species
-        :param top_hierarchy: extract only the top hierarchy pathways
-        :rtype: dict[set]
-        :return: pathways' genesets
-        """
-        if only_human:
-            pathways = self.get_human_pathways()
-            return {
-                pathway.name: {
-                    protein.hgnc_symbol
-                    for protein in pathway.proteins
-                    if protein.hgnc_symbol
-                }
-                for pathway in pathways
-                if pathway.proteins
-            }
-
-        if top_hierarchy:
-            return {
-                pathway.name: {
-                    protein.hgnc_symbol
-                    for protein in pathway.proteins
-                    if protein.hgnc_symbol
-                }
-                for pathway in self.get_all_pathways()
-                if not pathway.parent_id and pathway.proteins
-            }
-
-        # if no species and not top hierarchy return all
-        return {
-            pathway.name: {
-                protein.hgnc_symbol
-                for protein in pathway.proteins
-                if protein.hgnc_symbol
-            }
-            for pathway in self.get_all_pathways()
-            if pathway.proteins
-        }
-
-    def get_hgnc_symbol_distribution(self):
-        """Return the proteins in the database within the gene set query.
-
-        :rtype: collections.Counter
-        :return: pathway sizes
-        """
-        return Counter(
-            protein.hgnc_symbol
-            for pathway in self.get_all_pathways()
-            if pathway.proteins
-            for protein in pathway.proteins
-            if protein.hgnc_symbol
-        )
 
     def get_gene_sets(self, only_human: bool = False) -> Mapping[str, Set[str]]:
         """Return pathway - genesets mapping."""
@@ -208,8 +108,8 @@ class Manager(CompathManager):
     def get_or_create_chemical(self, *, chebi_id: str, chebi_name: str) -> Chemical:
         """Get a Chemical from the database or creates it.
 
-        :param chebi_id: identifier
-        :param chebi_name: name
+        :param chebi_id: ChEBI identifier
+        :param chebi_name: ChEBI name
         """
         chemical = self.get_chemical_by_chebi_id(chebi_id)
 
@@ -272,7 +172,7 @@ class Manager(CompathManager):
         return self.session.query(Species).filter(Species.name == species_name).one_or_none()
 
     def get_pathway_names_to_ids(self, only_human: bool = False):
-        """Return a dictionary of pathway names to ids
+        """Return a dictionary of pathway names to ids.
 
         :rtype: dict[str,str]
         """
@@ -388,10 +288,10 @@ class Manager(CompathManager):
 
         self.session.commit()
 
-    def _pathway_hierarchy(self, url=None):
-        """ Links pathway models through hierarchy
+    def _pathway_hierarchy(self, url: Optional[str] = None) -> None:
+        """Links pathway models through hierarchy.
 
-        :param Optional[str] url: url from pathway hierarchy file
+        :param url: url from pathway hierarchy file
         """
         df = get_pathway_hierarchy_df(url=url)
         pathways_hierarchy = parse_pathway_hierarchy(df)
@@ -412,7 +312,7 @@ class Manager(CompathManager):
 
         self.session.commit()
 
-    def _pathway_protein(self, url: Optional[str] = None):
+    def _pathway_protein(self, url: Optional[str] = None) -> None:
         """Populate UniProt tables.
 
         :param url: url from pathway protein file
@@ -512,7 +412,8 @@ class Manager(CompathManager):
         from flask_admin.contrib.sqla import ModelView
 
         class PathwayView(ModelView):
-            """Pathway view in Flask-admin"""
+            """Pathway view in Flask-admin."""
+
             column_searchable_list = (
                 Pathway.identifier,
                 Pathway.name,

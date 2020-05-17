@@ -18,27 +18,27 @@ from .constants import CHEBI, HGNC, REACTOME, UNIPROT
 Base = declarative_base()
 
 TABLE_PREFIX = 'reactome'
-PATHWAY_TABLE_NAME = '{}_pathway'.format(TABLE_PREFIX)
-PATHWAY_TABLE_HIERARCHY = '{}_pathway_hierarchy'.format(TABLE_PREFIX)
-SPECIES_TABLE_NAME = '{}_species'.format(TABLE_PREFIX)
-PROTEIN_TABLE_NAME = '{}_protein'.format(TABLE_PREFIX)
-CHEMICAL_TABLE_NAME = '{}_chemical'.format(TABLE_PREFIX)
-PROTEIN_PATHWAY_TABLE = '{}_protein_pathway'.format(TABLE_PREFIX)
-CHEMICAL_PATHWAY_TABLE = '{}_chemical_pathway'.format(TABLE_PREFIX)
-SPECIES_PATHWAY_TABLE = '{}_species_pathway'.format(TABLE_PREFIX)
+PATHWAY_TABLE_NAME = f'{TABLE_PREFIX}_pathway'
+PATHWAY_TABLE_HIERARCHY = f'{TABLE_PREFIX}_pathway_hierarchy'
+SPECIES_TABLE_NAME = f'{TABLE_PREFIX}_species'
+PROTEIN_TABLE_NAME = f'{TABLE_PREFIX}_protein'
+CHEMICAL_TABLE_NAME = f'{TABLE_PREFIX}_chemical'
+PROTEIN_PATHWAY_TABLE = f'{TABLE_PREFIX}_protein_pathway'
+CHEMICAL_PATHWAY_TABLE = f'{TABLE_PREFIX}_chemical_pathway'
+SPECIES_PATHWAY_TABLE = f'{TABLE_PREFIX}_species_pathway'
 
 protein_pathway = Table(
     PROTEIN_PATHWAY_TABLE,
     Base.metadata,
-    Column('protein_id', Integer, ForeignKey('{}.id'.format(PROTEIN_TABLE_NAME))),
-    Column('pathway_id', Integer, ForeignKey('{}.id'.format(PATHWAY_TABLE_NAME)))
+    Column('protein_id', Integer, ForeignKey(f'{PROTEIN_TABLE_NAME}.id')),
+    Column('pathway_id', Integer, ForeignKey(f'{PATHWAY_TABLE_NAME}.id')),
 )
 
 chemical_pathway = Table(
     CHEMICAL_PATHWAY_TABLE,
     Base.metadata,
-    Column('chemical_id', Integer, ForeignKey('{}.id'.format(CHEMICAL_TABLE_NAME)), primary_key=True),
-    Column('pathway_id', Integer, ForeignKey('{}.id'.format(PATHWAY_TABLE_NAME)), primary_key=True)
+    Column('chemical_id', Integer, ForeignKey(f'{CHEMICAL_TABLE_NAME}.id'), primary_key=True),
+    Column('pathway_id', Integer, ForeignKey(f'{PATHWAY_TABLE_NAME}.id'), primary_key=True),
 )
 
 
@@ -52,7 +52,7 @@ class Protein(Base, CompathProteinMixin):
     """Protein Table."""
 
     __tablename__ = PROTEIN_TABLE_NAME
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)  # noqa:A003
 
     uniprot_id = Column(String(64), unique=True, nullable=False, index=True)
     uniprot_accession = Column(String(64), nullable=True)
@@ -61,11 +61,11 @@ class Protein(Base, CompathProteinMixin):
     hgnc_symbol = Column(String(64), nullable=True)
     hgnc_id = Column(String(64), nullable=True)
 
-    def __repr__(self) -> str:
+    def __repr__(self) -> str:  # noqa:D105
         return self.uniprot_id
 
     def to_pybel(self) -> pybel.dsl.Protein:
-        """Function to serialize to PyBEL node data dictionary."""
+        """Serialize to PyBEL node data dictionary."""
         if self.hgnc_symbol and self.hgnc_id:
             return pybel.dsl.Protein(
                 namespace=HGNC,
@@ -85,18 +85,18 @@ class Chemical(Base):
     """Chemical Table."""
 
     __tablename__ = CHEMICAL_TABLE_NAME
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)  # noqa:A003
 
     chebi_id = Column(String(64), unique=True, nullable=False)
     name = Column(String(4096))
 
     pathways: List[Pathway]
 
-    def __repr__(self):
+    def __repr__(self) -> str:  # noqa:D105
         return self.chebi_id
 
     def to_pybel(self) -> pybel.dsl.Abundance:
-        """Function to serialize to PyBEL node data dictionary."""
+        """Serialize to PyBEL node data dictionary."""
         return pybel.dsl.Abundance(
             namespace=CHEBI,
             identifier=self.chebi_id,
@@ -108,7 +108,7 @@ class Pathway(Base, CompathPathwayMixin):
     """A reactome pathway."""
 
     __tablename__ = PATHWAY_TABLE_NAME
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)  # noqa:A003
 
     prefix = REACTOME
     identifier = Column(String(255), unique=True, nullable=False)
