@@ -10,7 +10,6 @@ import pandas as pd
 from tqdm import tqdm
 
 from bio2bel.compath import CompathManager
-from pybel import BELGraph
 from pyobo import get_name_id_mapping
 from .constants import MODULE_NAME, SPECIES_REMAPPING
 from .models import Base, Chemical, Pathway, Protein, Species, chemical_pathway, protein_pathway
@@ -240,16 +239,6 @@ class Manager(CompathManager):
     def get_protein_by_uniprot_id(self, uniprot_id: str) -> Optional[Protein]:
         """Get protein by UniProt id."""
         return self.session.query(Protein).filter(Protein.uniprot_id == uniprot_id).one_or_none()
-
-    def to_bel(self) -> BELGraph:
-        """Serialize Reactome to BEL."""
-        graph = BELGraph(
-            name='Reactome Pathway Definitions',
-            version='1.0.0',
-        )
-        for pathway in self.list_pathways():
-            pathway.add_to_bel_graph(graph)
-        return graph
 
     """Custom Methods to Populate the DB"""
 
