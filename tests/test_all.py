@@ -165,7 +165,7 @@ class TestGlobal(DatabaseMixin):
 
     def test_gene_query_1(self):
         """Single protein query. This protein is associated with 3 pathways"""
-        hgnc_gene_symbol = 'HGNC_SYMBOL_3'
+        hgnc_gene_symbol = 'PFKM'
         protein = self.reactome_manager.get_protein_by_hgnc_symbol(hgnc_gene_symbol)
         self.assertIsNotNone(protein)
 
@@ -173,7 +173,7 @@ class TestGlobal(DatabaseMixin):
             hgnc_gene_symbol,
         ])
         self.assertIsNotNone(enriched_pathways, msg='Enriching function is not working')
-        self.assertLess(0, len(enriched_pathways), msg='No results found')
+        self.assertNotEqual(0, len(enriched_pathways), msg='No results found')
 
         self.assertIn("R-HSA-389359", enriched_pathways)
         self.assertEqual(
@@ -183,12 +183,12 @@ class TestGlobal(DatabaseMixin):
                 "mapped_proteins": 1,
                 "pathway_size": 7,
                 "pathway_gene_set": {
-                    'HGNC_SYMBOL_1',
-                    'HGNC_SYMBOL_2',
-                    'HGNC_SYMBOL_3',
-                    'HGNC_SYMBOL_4',
-                    'HGNC_SYMBOL_5',
-                    'HGNC_SYMBOL_6',
+                    'ASIC3',
+                    'CNNM1',
+                    'CNNM2',
+                    'CNNM3',
+                    'CNNM4',
+                    'SFTPD',
                     'PFKM',
                 },
             },
@@ -202,7 +202,7 @@ class TestGlobal(DatabaseMixin):
                 "pathway_name": "CD28 dependent PI3K/Akt signaling",
                 "mapped_proteins": 1,
                 "pathway_size": 3,
-                "pathway_gene_set": {'HGNC_SYMBOL_3', 'PFKM', 'HGNC_SYMBOL_2'},
+                "pathway_gene_set": {'CNNM1', 'PFKM', 'CNNM2'},
             },
             enriched_pathways["R-RNO-389357"],
         )
@@ -214,16 +214,16 @@ class TestGlobal(DatabaseMixin):
                 "pathway_name": "CD28 co-stimulation",
                 "mapped_proteins": 1,
                 "pathway_size": 3,
-                "pathway_gene_set": {'PFKM', 'HGNC_SYMBOL_3', 'HGNC_SYMBOL_1'},
+                "pathway_gene_set": {'PFKM', 'CNNM2', 'ASIC3'},
             },
             enriched_pathways["R-HSA-389356"],
         )
 
     def test_gene_query_2(self):
         """Multiple protein query"""
-        enriched_pathways = self.reactome_manager.query_hgnc_symbols(['HGNC_SYMBOL_3', 'HGNC_SYMBOL_5'])
+        enriched_pathways = self.reactome_manager.query_hgnc_symbols(['CNNM2', 'CNNM4'])
         self.assertIsNotNone(enriched_pathways, msg='Enriching function is not working')
-        self.assertLess(0, len(enriched_pathways), msg='No results found')
+        self.assertNotEqual(0, len(enriched_pathways), msg='No results found')
 
         self.assertIn('R-RNO-389357', enriched_pathways)
         self.assertEqual(
@@ -232,7 +232,7 @@ class TestGlobal(DatabaseMixin):
                 "pathway_name": "CD28 dependent PI3K/Akt signaling",
                 "mapped_proteins": 1,
                 "pathway_size": 3,
-                "pathway_gene_set": {'HGNC_SYMBOL_3', 'PFKM', 'HGNC_SYMBOL_2'},
+                "pathway_gene_set": {'CNNM1', 'PFKM', 'CNNM2'},
             },
             enriched_pathways["R-RNO-389357"],
         )
@@ -243,7 +243,7 @@ class TestGlobal(DatabaseMixin):
                 "pathway_name": "CD28 co-stimulation",
                 "mapped_proteins": 1,
                 "pathway_size": 3,
-                "pathway_gene_set": {'PFKM', 'HGNC_SYMBOL_3', 'HGNC_SYMBOL_1'},
+                "pathway_gene_set": {'PFKM', 'CNNM2', 'ASIC3'},
             },
             enriched_pathways["R-HSA-389356"],
         )
@@ -255,46 +255,34 @@ class TestGlobal(DatabaseMixin):
                 "mapped_proteins": 2,
                 "pathway_size": 7,
                 "pathway_gene_set": {
-                    'HGNC_SYMBOL_1',
-                    'HGNC_SYMBOL_2',
-                    'HGNC_SYMBOL_3',
-                    'HGNC_SYMBOL_4',
-                    'HGNC_SYMBOL_5',
-                    'HGNC_SYMBOL_6',
+                    'ASIC3',
+                    'CNNM1',
+                    'CNNM2',
+                    'CNNM3',
+                    'CNNM4',
                     'PFKM',
-                }
+                    'SFTPD',
+                },
             },
             enriched_pathways["R-HSA-389359"],
         )
 
     def test_gene_query_3(self):
         """Multiple protein query"""
-        enriched_pathways = self.reactome_manager.query_hgnc_symbols(['HGNC_SYMBOL_3', 'HGNC_SYMBOL_1'])
+        enriched_pathways = self.reactome_manager.query_hgnc_symbols(['CNNM1', 'ASIC3'])
         self.assertIsNotNone(enriched_pathways, msg='Enriching function is not working')
-        self.assertLess(0, len(enriched_pathways), msg='No results found')
+        self.assertNotEqual(0, len(enriched_pathways), msg='No results found')
 
-        self.assertIn('R-RNO-389357', enriched_pathways)
+        self.assertIn('R-RNO-389357', set(enriched_pathways))
         self.assertEqual(
             {
                 "pathway_id": "R-RNO-389357",
                 "pathway_name": "CD28 dependent PI3K/Akt signaling",
                 "mapped_proteins": 1,
                 "pathway_size": 3,
-                "pathway_gene_set": {'HGNC_SYMBOL_3', 'PFKM', 'HGNC_SYMBOL_2'},
+                "pathway_gene_set": {'CNNM2', 'CNNM1', 'PFKM'},
             },
             enriched_pathways["R-RNO-389357"],
-        )
-
-        self.assertIn('R-HSA-389356', enriched_pathways)
-        self.assertEqual(
-            {
-                "pathway_id": "R-HSA-389356",
-                "pathway_name": "CD28 co-stimulation",
-                "mapped_proteins": 2,
-                "pathway_size": 3,
-                "pathway_gene_set": {'PFKM', 'HGNC_SYMBOL_3', 'HGNC_SYMBOL_1'},
-            },
-            enriched_pathways["R-HSA-389356"],
         )
 
         self.assertIn('R-HSA-389359', enriched_pathways)
@@ -305,12 +293,12 @@ class TestGlobal(DatabaseMixin):
                 "mapped_proteins": 2,
                 "pathway_size": 7,
                 "pathway_gene_set": {
-                    'HGNC_SYMBOL_1',
-                    'HGNC_SYMBOL_2',
-                    'HGNC_SYMBOL_3',
-                    'HGNC_SYMBOL_4',
-                    'HGNC_SYMBOL_5',
-                    'HGNC_SYMBOL_6',
+                    'ASIC3',
+                    'CNNM1',
+                    'CNNM2',
+                    'CNNM3',
+                    'CNNM4',
+                    'SFTPD',
                     'PFKM',
                 },
             },
