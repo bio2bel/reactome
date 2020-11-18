@@ -62,8 +62,8 @@ Citation
 - Croft, David et al. “The Reactome Pathway Knowledgebase.” Nucleic Acids Research 42.Database issue (2014): D472–D477.
   PMC. Web. 6 Oct. 2017.
 
-.. |build| image:: https://travis-ci.org/bio2bel/reactome.svg?branch=master
-    :target: https://travis-ci.org/bio2bel/reactome
+.. |build| image:: https://travis-ci.com/bio2bel/reactome.svg?branch=master
+    :target: https://travis-ci.com/bio2bel/reactome
     :alt: Build Status
 
 .. |coverage| image:: https://codecov.io/gh/bio2bel/reactome/coverage.svg?branch=master
