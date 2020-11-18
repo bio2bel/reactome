@@ -15,6 +15,7 @@ Column 4 and 6 are redundant since Reactome ID contains all info relative to spe
 """
 
 import logging
+from functools import lru_cache
 
 import pandas as pd
 from protmapper.api import hgnc_name_to_id
@@ -43,9 +44,20 @@ get_proteins_pathways_df = make_df_getter(
     names=['uniprot_id', 'reactome_id', 'reactome_link', 'reactome_name', 'evidence', 'species'],
 )
 
-chebi_id_to_name = get_id_name_mapping('chebi')
-hgnc_id_to_name = {v: k for k, v in hgnc_name_to_id.items()}
-species_name_to_id = get_name_id_mapping('ncbitaxon')
+
+@lru_cache()
+def _chebi_id_to_name():
+    return get_id_name_mapping('chebi')
+
+
+@lru_cache()
+def _hgnc_id_to_name():
+    return {v: k for k, v in hgnc_name_to_id.items()}
+
+
+@lru_cache()
+def _species_name_to_id():
+    return get_name_id_mapping('ncbitaxon')
 
 
 def get_procesed_proteins_pathways_df(*args, **kwargs) -> pd.DataFrame:
@@ -57,10 +69,10 @@ def get_procesed_proteins_pathways_df(*args, **kwargs) -> pd.DataFrame:
 
     df['uniprot_accession'] = df['uniprot_id'].map(get_mnemonic)
     df['hgnc_id'] = df['uniprot_id'].map(get_hgnc_id)
-    df['hgnc_symbol'] = df['hgnc_id'].map(hgnc_id_to_name.get)
+    df['hgnc_symbol'] = df['hgnc_id'].map(_hgnc_id_to_name().get)
 
     df['species'] = df['species'].map(lambda x: SPECIES_REMAPPING.get(x, x))
-    df['species_taxonomy_id'] = df['species'].map(species_name_to_id.get)
+    df['species_taxonomy_id'] = df['species'].map(_species_name_to_id().get)
     return df
 
 
@@ -81,8 +93,8 @@ def get_procesed_chemical_pathways_df(*args, **kwargs) -> pd.DataFrame:
     del df['reactome_name']
     del df['evidence']
 
-    df['chebi_name'] = df['chebi_id'].map(chebi_id_to_name.get)
+    df['chebi_name'] = df['chebi_id'].map(_chebi_id_to_name().get)
 
     df['species'] = df['species'].map(lambda x: SPECIES_REMAPPING.get(x, x))
-    df['species_taxonomy_id'] = df['species'].map(species_name_to_id.get)
+    df['species_taxonomy_id'] = df['species'].map(_species_name_to_id().get)
     return df
