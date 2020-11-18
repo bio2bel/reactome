@@ -2,33 +2,29 @@
 
 """This module populates the tables of bio2bel_reactome."""
 
-import bio2bel_chebi
-import bio2bel_hgnc
-import itertools as itt
 import logging
-from bio2bel.manager.bel_manager import BELManagerMixin
-from bio2bel.manager.flask_manager import FlaskMixin
-from bio2bel.manager.namespace_manager import BELNamespaceManagerMixin
-from collections import Counter
-from compath_utils import CompathManager
-from pybel import BELGraph
-from pybel.manager.models import NamespaceEntry
-from sqlalchemy import and_
+from collections import defaultdict
+from typing import Dict, List, Mapping, Optional, Set
+
+import pandas as pd
 from tqdm import tqdm
-from typing import List, Mapping, Optional
 
-from .constants import MODULE_NAME
+from bio2bel.compath import CompathManager
+from pyobo import get_name_id_mapping
+from .constants import MODULE_NAME, SPECIES_REMAPPING
 from .models import Base, Chemical, Pathway, Protein, Species, chemical_pathway, protein_pathway
-from .parsers import *
+from .parsers.entity_pathways import get_procesed_chemical_pathways_df, get_procesed_proteins_pathways_df
+from .parsers.pathway_hierarchy import get_pathway_hierarchy_df, parse_pathway_hierarchy
+from .parsers.pathway_names import get_pathway_names_df, parse_pathway_names
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 __all__ = [
     'Manager',
 ]
 
 
-class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMixin):
+class Manager(CompathManager):
     """Protein-pathway and chemical-pathway memberships."""
 
     module_name = MODULE_NAME
@@ -36,162 +32,39 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
     _base = Base
     edge_model = [protein_pathway, chemical_pathway]
     namespace_model = pathway_model = Pathway
-    pathway_model_identifier_column = Pathway.reactome_id
     flask_admin_models = [Pathway, Protein, Species, Chemical]
 
     has_hierarchy = True  # Indicates that this manager can handle hierarchies with the Pathway Model
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:  # noqa: D107
         super().__init__(*args, **kwargs)
-
         # Global dictionary
-        self.pid_protein = {}
+        self.uniprot_id_to_protein: Dict[str, Protein] = {}
+        self.chebi_id_to_chemical: Dict[str, Chemical] = {}
 
     def summarize(self) -> Mapping[str, int]:
         """Summarize the database."""
-        return dict(
-            pathways=self.count_pathways(),
-            proteins=self.count_proteins(),
-            chemicals=self.count_chemicals(),
-            species=self.count_species(),
-        )
-
-    def count_pathways(self) -> int:
-        """Count the pathways in the database."""
-        return self.session.query(Pathway).count()
+        return {
+            'pathways': self.count_pathways(),
+            'proteins': self.count_proteins(),
+            'chemicals': self.count_chemicals(),
+            'species': self.count_species(),
+        }
 
     def count_chemicals(self) -> int:
         """Count the chemicals in the database."""
         return self.session.query(Chemical).count()
 
-    def count_proteins(self) -> int:
-        """Count the proteins in the database."""
-        return self.session.query(Protein).count()
-
     def count_species(self) -> int:
         """Count the species in the database."""
         return self.session.query(Species).count()
 
-    """Custom query methods"""
-
-    def query_similar_pathways(self, pathway_name: str, top: Optional[int] = None) -> List[Pathway]:
-        """Filter pathways by name.
-
-        :param pathway_name: pathway name to query
-        :param top: return only X entries
-        """
-        similar_pathways_query = (
-            self.session
-                .query(self.pathway_model.resource_id, self.pathway_model.name)
-                .join(Species)
-                .filter(and_(
-                self.pathway_model.name.contains(pathway_name),
-                Species.name == 'Homo sapiens')
-            )
-        )
-
-        if top is None:
-            return similar_pathways_query.all()
-
-        return similar_pathways_query.limit(top).all()
-
-    def query_gene_set(self, gene_set):
-        """Return pathway counter dictionary.
-
-        :param list[str] gene_set: gene set to be queried
-        :rtype: dict[str,dict]]
-        :return: Enriched pathways with mapped pathways/total
-        """
-        proteins = self._query_proteins_in_hgnc_list(gene_set)
-
-        pathways_lists = [
-            protein.get_pathways_ids()
-            for protein in proteins
-        ]
-
-        # Flat the pathways lists and applies Counter to get the number matches in every mapped pathway
-        pathway_counter = Counter(itt.chain(*pathways_lists))
-
-        enrichment_results = dict()
-
-        for pathway_reactome_id, proteins_mapped in pathway_counter.items():
-            pathway = self.get_pathway_by_id(pathway_reactome_id)
-
-            pathway_gene_set = pathway.get_gene_set()  # Pathway gene set
-
-            enrichment_results[pathway.reactome_id] = {
-                "pathway_id": pathway.reactome_id,
-                "pathway_name": pathway.name,
-                "mapped_proteins": proteins_mapped,
-                "pathway_size": len(pathway_gene_set),
-                "pathway_gene_set": pathway_gene_set,
-            }
-
-        return enrichment_results
-
-    def export_gene_sets(self, species='Homo sapiens', top_hierarchy=None):
-        """Return pathway - genesets mapping
-
-        :param opt[str] species: pathways specific to a species
-        :param opt[bool] top_hierarchy: extract only the top hierarchy pathways
-        :rtype: dict[set]
-        :return: pathways' genesets
-        """
-        if species:
-            pathways = self.session.query(Pathway).join(Species).filter(Species.name == species).all()
-            return {
-                pathway.name: {
-                    protein.hgnc_symbol
-                    for protein in pathway.proteins
-                    if protein.hgnc_symbol
-                }
-                for pathway in pathways
-                if pathway.proteins
-            }
-
-        if top_hierarchy:
-            return {
-                pathway.name: {
-                    protein.hgnc_symbol
-                    for protein in pathway.proteins
-                    if protein.hgnc_symbol
-                }
-                for pathway in self.session.query(Pathway).all()
-                if not pathway.parent_id and pathway.proteins
-            }
-
-        # if no species and not top hierarchy return all
-        return {
-            pathway.name: {
-                protein.hgnc_symbol
-                for protein in pathway.proteins
-                if protein.hgnc_symbol
-            }
-            for pathway in self.session.query(Pathway).all()
-            if pathway.proteins
-        }
-
-    def get_gene_distribution(self):
-        """Return the proteins in the database within the gene set query.
-
-        :rtype: collections.Counter
-        :return: pathway sizes
-        """
-        return Counter(
-            gene.hgnc_symbol
-            for pathway in self.get_all_pathways()
-            if pathway.proteins
-            for gene in pathway.proteins
-            if gene.hgnc_symbol
-        )
-
-    def get_gene_sets(self):
-        """Return pathway - genesets mapping
-
-        :rtype: dict[set]
-        :return: pathways' gene sets
-        """
-        human_pathways = self.get_pathways_by_species('Homo sapiens')
+    def get_gene_sets(self, only_human: bool = False) -> Mapping[str, Set[str]]:
+        """Return pathway - genesets mapping."""
+        if only_human:
+            pathways = self.get_human_pathways()
+        else:
+            pathways = self.list_pathways()
 
         return {
             pathway.name: {
@@ -199,166 +72,123 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
                 for protein in pathway.proteins
                 if protein.hgnc_symbol
             }
-            for pathway in human_pathways
+            for pathway in pathways
             if pathway.proteins
         }
 
-    def get_or_create_pathway(self, reactome_id, name, species):
+    def get_or_create_pathway(
+        self,
+        *,
+        reactome_id: str,
+        name: str,
+        species: Species,
+        chemicals: Optional[List[Chemical]],
+    ) -> Pathway:
         """Get a pathway from the database or creates it.
 
-        :param str reactome_id: pathway identifier
-        :param str name: name of the pathway
-        :param bio2bel_reactome.models.Species species: Species object
-        :rtype: Pathway
+        :param reactome_id: pathway identifier
+        :param name: name of the pathway
+        :param species: Species object
+        :param chemicals: An optional list of chemicals that belong too this pathway
         """
         pathway = self.get_pathway_by_id(reactome_id)
 
         if pathway is None:
             pathway = Pathway(
-                reactome_id=reactome_id,
+                identifier=reactome_id,
                 name=name,
-                species=species
+                species=species,
+                chemicals=chemicals,
             )
             self.session.add(pathway)
 
         return pathway
 
-    def get_or_create_chemical(self, chebi_id: str, chebi_name: str) -> Chemical:
+    def get_or_create_chemical(self, *, chebi_id: str, chebi_name: str) -> Chemical:
         """Get a Chemical from the database or creates it.
 
-        :param chebi_id: identifier
-        :param chebi_name: name
+        :param chebi_id: ChEBI identifier
+        :param chebi_name: ChEBI name
         """
         chemical = self.get_chemical_by_chebi_id(chebi_id)
 
         if chemical is None:
             chemical = Chemical(
                 chebi_id=chebi_id,
-                chebi_name=chebi_name
+                name=chebi_name,
             )
-
             self.session.add(chemical)
 
         return chemical
 
-    def get_or_create_species(self, species_name):
-        """Get a Species from the database or creates it.
-
-        :param str species_name: name
-        :rtype: Species
-        """
-        species = self.get_species_by_name(species_name)
+    def get_or_create_species(self, *, taxonomy_id: str, name: str) -> Species:
+        """Get a Species from the database or creates it."""
+        species = self.get_species_by_name(name)
 
         if species is None:
-            species = Species(
-                name=species_name,
-            )
+            species = Species(taxonomy_id=taxonomy_id, name=name)
             self.session.add(species)
 
         return species
 
-    def get_or_create_protein(self, uniprot_id, hgnc_symbol=None, hgnc_id=None):
-        """Get an protein from the database or creates it.
+    def get_or_create_protein(
+        self,
+        uniprot_id: str,
+        hgnc_symbol: Optional[str] = None,
+        hgnc_id: Optional[str] = None,
+    ) -> Protein:
+        """Get a protein from the database or creates it.
 
-        :param str uniprot_id: pathway identifier
-        :param Optional[str] hgnc_symbol: name of the pathway
-        :param Optional[str] hgnc_id: Species object
-        :rtype: Protein
+        :param uniprot_id: pathway identifier
+        :param hgnc_symbol: name of the pathway
+        :param hgnc_id: Species object
         """
         protein = self.get_protein_by_uniprot_id(uniprot_id)
 
         if protein is not None:
             return protein
 
-        protein = self.pid_protein.get(uniprot_id)
+        protein = self.uniprot_id_to_protein.get(uniprot_id)
 
         if protein is not None:
             self.session.add(protein)
             return protein
 
-        protein = self.pid_protein[uniprot_id] = Protein(
+        protein = self.uniprot_id_to_protein[uniprot_id] = Protein(
             uniprot_id=uniprot_id,
             hgnc_symbol=hgnc_symbol,
-            hgnc_id=hgnc_id
+            hgnc_id=hgnc_id,
         )
         self.session.add(protein)
 
         return protein
 
-    def get_species_by_name(self, species_name):
+    def get_species_by_name(self, species_name: str) -> Optional[Species]:
         """Get a Species by its species_name.
 
-        :param str species_name: name
-        :rtype: Optional[Species]
+        :param species_name: name
         """
         return self.session.query(Species).filter(Species.name == species_name).one_or_none()
 
-    def get_pathway_names_to_ids(self):
-        """Return a dictionary of pathway names to ids
+    def get_pathway_names_to_ids(self, only_human: bool = False):
+        """Return a dictionary of pathway names to ids.
 
         :rtype: dict[str,str]
         """
-        human_pathways = self.get_pathways_by_species('Homo sapiens')
+        if only_human:
+            pathways = self.get_human_pathways()
+        else:
+            pathways = self.list_pathways()
 
         return {
-            pathway.name: pathway.reactome_id
-            for pathway in human_pathways
-        }
-
-    def get_all_hgnc_symbols(self):
-        """Return the set of genes present in all Reactome Pathways.
-
-        :rtype: set
-        """
-        return {
-            gene.hgnc_symbol
-            for pathway in self.get_pathways_by_species('Homo sapiens')
-            for gene in pathway.proteins
-            if pathway.proteins
-        }
-
-    def get_pathway_size_distribution(self):
-        """Return pathway sizes.
-
-        :rtype: dict
-        :return: pathway sizes
-        """
-
-        pathways = self.get_pathways_by_species('Homo sapiens')
-
-        return {
-            pathway.resource_id: [pathway.name, len(pathway.proteins)]
+            pathway.name: pathway.identifier
             for pathway in pathways
-            if pathway.proteins
         }
 
-    def get_pathway_by_name(self, pathway_name, species=None):
-        """Get a pathway by name.
-
-        :param pathway_name: name
-        :param Optional[str] species: name
-        :rtype: Optional[Pathway]
-        """
-        results = self.session.query(Pathway).filter(Pathway.name == pathway_name).all()
-
-        if not results:
-            return None
-
-        if not species:
-            species = 'Homo sapiens'
-
-        for pathway in results:
-
-            if pathway.species.name == species:
-                return pathway
-
-        return None
-
-    def get_pathway_parent_by_id(self, reactome_id):
+    def get_pathway_parent_by_id(self, reactome_id: str) -> Optional[Pathway]:
         """Get parent pathway by its reactome id.
 
         :param reactome_id: reactome identifier
-        :rtype: Optional[Pathway]
         """
         pathway = self.get_pathway_by_id(reactome_id)
 
@@ -367,26 +197,21 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
 
         return pathway.parent
 
-    def get_top_hiearchy_parent_by_id(self, reactome_id):
+    def get_top_hiearchy_parent_by_id(self, reactome_id: str) -> Optional[Pathway]:
         """Get the oldest pathway at the top of the hierarchy a pathway by its reactome id.
 
         :param reactome_id: reactome identifier
-        :rtype: Optional[Pathway]
         """
-
         pathway = self.get_pathway_by_id(reactome_id)
 
         if not pathway.parent:
             return pathway
 
-        return self.get_top_hiearchy_parent_by_id(pathway.parent.reactome_id)
+        return self.get_top_hiearchy_parent_by_id(pathway.parent.identifier)
 
-    def get_all_top_hierarchy_pathways(self):
-        """Get all pathways without a parent (top hierarchy).
-
-        :rtype: list[Pathways]
-        """
-        all_pathways = self.get_all_pathways()
+    def get_all_top_hierarchy_pathways(self) -> List[Pathway]:
+        """Get all pathways without a parent (top hierarchy)."""
+        all_pathways = self.list_pathways()
 
         return [
             pathway
@@ -394,18 +219,11 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
             if not pathway.parent_id
         ]
 
-    def get_all_pathway_names(self):
-        """Get all pathway names stored in the database.
+    def get_human_pathways(self) -> List[Pathway]:
+        """Get human pathways."""
+        return self.get_pathways_by_species('Homo sapiens')
 
-        :rtype: list[str]
-        """
-        return [
-            pathway.name
-            for pathway in self.session.query(self.pathway_model).all()
-            if pathway.species.name == 'Homo sapiens'
-        ]
-
-    def get_pathways_by_species(self, species_name):
+    def get_pathways_by_species(self, species_name: str) -> Optional[List[Pathway]]:
         """Get pathways by species."""
         filtered_species = self.session.query(Species).filter(Species.name == species_name).one_or_none()
 
@@ -414,91 +232,66 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
 
         return filtered_species.pathways
 
-    def get_chemical_by_chebi_id(self, chebi_id):
-        """Get chemical by CHEBI id."""
+    def get_chemical_by_chebi_id(self, chebi_id: str) -> Optional[Chemical]:
+        """Get chemical by ChEBI id."""
         return self.session.query(Chemical).filter(Chemical.chebi_id == chebi_id).one_or_none()
 
-    def get_protein_by_uniprot_id(self, uniprot_id):
+    def get_protein_by_uniprot_id(self, uniprot_id: str) -> Optional[Protein]:
         """Get protein by UniProt id."""
         return self.session.query(Protein).filter(Protein.uniprot_id == uniprot_id).one_or_none()
 
-    def _create_namespace_entry_from_model(self, model, namespace):
-        """Create a namespace entry from the model.
-
-        :param Pathway model: The model to convert
-        :type namespace: pybel.manager.models.Namespace
-        :rtype: Optional[pybel.manager.models.NamespaceEntry]
-        """
-        return NamespaceEntry(encoding='B', name=model.name, identifier=model.reactome_id, namespace=namespace)
-
-    @staticmethod
-    def _get_identifier(model):
-        """Extract the identifier from a pathway mode.
-
-        :param Pathway model: The model to convert
-        :rtype: str
-        """
-        return model.reactome_id
-
-    def to_bel(self) -> BELGraph:
-        """Serialize Reactome to BEL."""
-        graph = BELGraph(
-            name='Reactome Pathway Definitions',
-            version='1.0.0',
-        )
-        for pathway in self.list_pathways():
-            self._add_pathway_to_graph(graph, pathway)
-        return graph
-
     """Custom Methods to Populate the DB"""
 
-    def _populate_pathways(self, url: Optional[str] = None):
+    def _populate_pathways(
+        self,
+        chemical_mapping: Mapping[str, List[Chemical]],
+        url: Optional[str] = None,
+    ) -> None:
         """Populate the pathway table.
 
         :param url: url from pathway table file
         """
-
         df = get_pathway_names_df(url=url)
         pathways_dict, species_set = parse_pathway_names(df)
 
+        species_name_to_id = get_name_id_mapping('ncbitaxon')
         species_name_to_model = {}
 
-        log.info("populating species")
+        for species_name in tqdm(species_set, desc='populating species'):
+            species_name = SPECIES_REMAPPING.get(species_name, species_name)
+            species_name_to_model[species_name] = self.get_or_create_species(
+                name=species_name,
+                taxonomy_id=species_name_to_id[species_name],
+            )
 
-        for species_name in tqdm(species_set, desc='Loading species'):
-            new_species = self.get_or_create_species(species_name)
-            species_name_to_model[species_name] = new_species
+        for reactome_id, (name, species_name) in tqdm(pathways_dict.items(), desc='populating pathways'):
+            species_name = SPECIES_REMAPPING.get(species_name, species_name)
 
-        log.info("populating pathways")
-
-        for reactome_id, (name, species) in tqdm(pathways_dict.items(), desc='Loading pathways'):
             pathway = self.get_or_create_pathway(
                 reactome_id=reactome_id,
                 name=name,
-                species=species_name_to_model[species]
+                species=species_name_to_model[species_name],
+                chemicals=chemical_mapping.get(reactome_id, []),
             )
-
             self.session.add(pathway)
 
         self.session.commit()
 
-    def _pathway_hierarchy(self, url=None):
-        """ Links pathway models through hierarchy
+    def _pathway_hierarchy(self, url: Optional[str] = None) -> None:
+        """Links pathway models through hierarchy.
 
-        :param Optional[str] url: url from pathway hierarchy file
+        :param url: url from pathway hierarchy file
         """
         df = get_pathway_hierarchy_df(url=url)
         pathways_hierarchy = parse_pathway_hierarchy(df)
 
-        log.info("populating pathway hierarchy")
-
-        for parent_id, child_id in tqdm(pathways_hierarchy, desc='Loading pathway hierarchy'):
+        for parent_id, child_id in tqdm(pathways_hierarchy, desc='populating pathway hierarchy'):
             if parent_id is None:
-                log.warning('parent id is None')
+                logger.warning('parent id is None')
                 continue
 
             if child_id is None:
-                log.warning('child id is None')
+                logger.warning('child id is None')
                 continue
 
             parent = self.get_pathway_by_id(parent_id)
@@ -508,55 +301,42 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
 
         self.session.commit()
 
-    def _pathway_protein(self, url=None, only_human=True):
+    def _pathway_protein(self, url: Optional[str] = None) -> None:
         """Populate UniProt tables.
 
-        :param Optional[str] url: url from pathway protein file
-        :param bool url: only_human: only store human genes. Defaults to True.
+        :param url: url from pathway protein file
         """
-        hgnc_manager = bio2bel_hgnc.Manager(engine=self.engine, session=self.session)
-        if not hgnc_manager.is_populated():
-            hgnc_manager.populate()
+        pathways_proteins_df = get_procesed_proteins_pathways_df(url=url)
 
-        log.info(
-            "downloading proteins. This might take a couple of minutes depending on your internet connection..."
-        )
-
-        uniprot_df = get_proteins_pathways_df(url=url)
-        uniprots = parse_entities_pathways(entities_pathways_df=uniprot_df, only_human=only_human)
-
-        log.info("populating protein data")
         missing_reactome_ids = set()
         missing_hgnc_info = set()
 
-        for uniprot_id, reactome_id, evidence in tqdm(uniprots, desc='Loading proteins'):
+        protein_info_df = pathways_proteins_df[
+            ['uniprot_id', 'uniprot_accession', 'hgnc_id', 'hgnc_symbol']].drop_duplicates()
+        it = tqdm(protein_info_df.values, total=len(protein_info_df.index), desc='populating proteins')
+        for uniprot_id, uniprot_accession, hgnc_id, hgnc_symbol in it:
+            self.uniprot_id_to_protein[uniprot_id] = Protein(
+                uniprot_id=uniprot_id,
+                uniprot_accession=uniprot_accession,
+                hgnc_id=hgnc_id,
+                hgnc_symbol=hgnc_symbol,
+            )
 
+        it = tqdm(
+            pathways_proteins_df[['uniprot_id', 'reactome_id']].values,
+            total=len(pathways_proteins_df.index),
+            desc='populating proteins-pathway relations',
+        )
+        for uniprot_id, reactome_id in it:
             if uniprot_id is None:
-                log.warning('Uniprot identifier is None')
+                logger.debug('uniprot_id is none')
                 continue
 
-            genes = get_hgnc_symbol_id_by_uniprot_id(hgnc_manager, uniprot_id)
-
-            if not genes:
-
-                log.debug('{} has no HGNC info'.format(uniprot_id))
-                missing_hgnc_info.add(uniprot_id)
-
-                protein = self.get_or_create_protein(uniprot_id=uniprot_id)
-
-            # Human gene is stored with additional info
-            else:
-                for gene in genes:
-                    protein = self.get_or_create_protein(
-                        uniprot_id=uniprot_id,
-                        hgnc_symbol=gene.symbol,
-                        hgnc_id=gene.identifier
-                    )
-
+            protein = self.uniprot_id_to_protein[uniprot_id]
             pathway = self.get_pathway_by_id(reactome_id)
-
             if pathway is None:
-                log.warning('Missing reactome identifier: %s', reactome_id)
+                if reactome_id not in missing_reactome_ids:
+                    it.write(f'protein/pathway mapping: could not find reactome:{reactome_id}')
                 missing_reactome_ids.add(reactome_id)
                 continue
 
@@ -566,71 +346,43 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
         self.session.commit()
 
         if missing_reactome_ids:
-            log.warning('missing %d reactome ids', len(missing_reactome_ids))
+            logger.warning('missing %d reactome ids', len(missing_reactome_ids))
 
         if missing_hgnc_info:
-            log.warning('missing %d hgncs', len(missing_hgnc_info))
+            logger.warning('missing %d hgncs', len(missing_hgnc_info))
 
-    def _pathway_chemical(self, url: Optional[str] = None, only_human: bool = True) -> None:
+    def _get_chemical_mapping(self, url: Optional[str] = None) -> Mapping[str, List[Chemical]]:
         """Populate ChEBI tables.
 
         :param url: url from pathway chemical file
-        :param  only_human: only store human chemicals
         """
-        chebi_manager = bio2bel_chebi.Manager(engine=self.engine, session=self.session)
-        if not chebi_manager.is_populated():
-            chebi_manager.populate()
-
-        log.info("downloading chemicals")
-
-        chebi_df = get_chemicals_pathways_df(url=url)
-        chebis = parse_entities_pathways(entities_pathways_df=chebi_df, only_human=only_human)
-
-        log.info("populating chemicals")
-        cid_chemical = {}
-        missing_reactome_ids = set()
-
-        for chebi_id, reactome_id, evidence in tqdm(chebis, desc='Loading chemicals'):
-            if chebi_id is None:
-                log.debug('ChEBI identifier is None')
+        chemical_pathways_df = get_procesed_chemical_pathways_df(url=url)
+        chemicals_df = chemical_pathways_df[['chebi_id', 'chebi_name']].drop_duplicates()
+        it = tqdm(chemicals_df.values, total=len(chemicals_df.index), desc='populating chemicals')
+        chebi_id_to_chemical = {}
+        for chebi_id, chebi_name in it:
+            if pd.isna(chebi_id):
                 continue
+            chebi_id_to_chemical[chebi_id] = Chemical(chebi_id=chebi_id, name=chebi_name)
 
-            chebi_id = str(chebi_id)
-
-            if chebi_id in cid_chemical:
-                chemical = cid_chemical[chebi_id]
-            else:
-                chebi_chemical = chebi_manager.get_chemical_by_chebi_id(chebi_id)
-
-                if chebi_chemical is None:
-                    log.warning(f'{chebi_id} was not found by the ChEBI manager')
-                    continue
-
-                chemical = self.get_or_create_chemical(chebi_id, chebi_chemical.name)
-                cid_chemical[chebi_id] = chemical
-
-            pathway = self.get_pathway_by_id(reactome_id)
-
-            if pathway is None:
-                log.debug(f'Missing Reactome identifier: {reactome_id}')
-                missing_reactome_ids.add(reactome_id)
-                continue
-
-            if pathway not in chemical.pathways:
-                chemical.pathways.append(pathway)
-
-        if missing_reactome_ids:
-            log.warning(f'missing {len(missing_reactome_ids)} reactome ids')
-
-        self.session.commit()
+        rv = defaultdict(list)
+        _slim_chemical_pathways_df = chemical_pathways_df[['chebi_id', 'reactome_id']].drop_duplicates()
+        it = tqdm(
+            _slim_chemical_pathways_df.values,
+            total=len(_slim_chemical_pathways_df.index),
+            desc='populating chemical/reactome',
+        )
+        for chebi_id, reactome_id in it:
+            chemical = chebi_id_to_chemical[chebi_id]
+            rv[reactome_id].append(chemical)
+        return dict(rv)
 
     def populate(
-            self,
-            pathways_path: Optional[str] = None,
-            pathways_hierarchy_path: Optional[str] = None,
-            pathways_proteins_path: Optional[str] = None,
-            pathways_chemicals_path: Optional[str] = None,
-            only_human: bool = True,
+        self,
+        pathways_path: Optional[str] = None,
+        pathways_hierarchy_path: Optional[str] = None,
+        pathways_proteins_path: Optional[str] = None,
+        pathways_chemicals_path: Optional[str] = None,
     ) -> None:
         """Populate all tables.
 
@@ -638,26 +390,27 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
         :param pathways_hierarchy_path: url from pathway hierarchy file
         :param pathways_proteins_path: url from pathway protein file
         :param pathways_chemicals_path: url from pathway chemical file
-        :param only_human: only store human chemicals
         """
-        self._populate_pathways(url=pathways_path)
+        chemical_mapping = self._get_chemical_mapping(url=pathways_chemicals_path)
+        self._populate_pathways(url=pathways_path, chemical_mapping=chemical_mapping)
         self._pathway_hierarchy(url=pathways_hierarchy_path)
-        self._pathway_protein(url=pathways_proteins_path, only_human=only_human)
-        self._pathway_chemical(url=pathways_chemicals_path, only_human=only_human)
+        self._pathway_protein(url=pathways_proteins_path)
 
     def _add_admin(self, app, **kwargs):
         from flask_admin import Admin
         from flask_admin.contrib.sqla import ModelView
 
         class PathwayView(ModelView):
-            """Pathway view in Flask-admin"""
+            """Pathway view in Flask-admin."""
+
             column_searchable_list = (
-                Pathway.reactome_id,
+                Pathway.identifier,
                 Pathway.name,
             )
 
         class ProteinView(ModelView):
-            """Protein view in Flask-admin"""
+            """Protein view in Flask-admin."""
+
             column_searchable_list = (
                 Protein.hgnc_symbol,
                 Protein.uniprot_id,
@@ -665,15 +418,19 @@ class Manager(CompathManager, BELNamespaceManagerMixin, BELManagerMixin, FlaskMi
             )
 
         class SpeciesView(ModelView):
-            """Species view in Flask-admin"""
+            """Species view in Flask-admin."""
+
             column_searchable_list = (
+                Species.taxonomy_id,
                 Species.name,
             )
 
         class ChemicalView(ModelView):
-            """Chemical view in Flask-admin"""
+            """Chemical view in Flask-admin."""
+
             column_searchable_list = (
                 Chemical.chebi_id,
+                Chemical.name,
             )
 
         admin = Admin(app, **kwargs)

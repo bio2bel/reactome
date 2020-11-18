@@ -1,19 +1,18 @@
 Bio2BEL Reactome |build| |coverage| |documentation| |zenodo|
 ============================================================
-This package allows the enrichment of BEL networks with Reactome information by wrapping its RESTful API.
-Furthermore, it is integrated in the `ComPath environment <https://github.com/ComPath>`_ for pathway database
+This package handles the nomenclature and membership of chemicals/proteins in Reactome pathways.
+It is integrated with the `ComPath environment <https://github.com/ComPath>`_ for pathway database
 comparison.
 
-Installation
-------------
-This code can be installed with :code:`pip3 install git+https://github.com/bio2bel/reactome.git`
+If you find this package useful, please consider citing [domingofernandez2018]_:
 
+.. [domingofernandez2018] Domingo-Fernandez, D., *et al* (2018). `ComPath: an ecosystem for exploring, analyzing,
+   and curating mappings across pathway databases <https://doi.org/10.1038/s41540-018-0078-8>`_.
+   *Npj Systems Biology and Applications*, __5__(1), 3.
 
-These two resources will be installed together with this package and can be quickly loaded by running the following
-commands in your terminal:
-
-- :code:`python3 -m bio2bel_hgnc populate`
-- :code:`python3 -m bio2bel_chebi populate`
+**Warning** This package creates ``partOf`` relationships in BEL, but does not convert Reactome mechanistic
+relationships to BEL. That functionality is implemented in the
+`PathMe project <https://github.com/pathwaymerger/pathme>`_.
 
 Installation |pypi_version| |python_versions| |pypi_license|
 ------------------------------------------------------------
@@ -22,24 +21,20 @@ following code in your favorite terminal:
 
 .. code-block:: sh
 
-    $ python3 -m pip install bio2bel_reactome
+    $ pip install bio2bel_reactome
 
-or from the latest code on `GitHub <https://github.com/bio2bel/reactome>`_ with:
+or from the latest code on `GitHub <https://github.com/bio2bel/reactome>`_ in development mode with:
 
 .. code-block:: sh
 
-    $ python3 -m pip install git+https://github.com/bio2bel/reactome.git@master
+    $ git clone https://github.com/bio2bel/reactome.git
+    $ cd reactome
+    $ pip install -e .
 
 Setup
 -----
 Reactome can be downloaded and populated from either the Python REPL or the automatically installed command line
 utility.
-
-The following resources will be automatically installed and loaded in order to fully populate the tables of the
-database:
-
-- `Bio2BEL CHEBI <https://github.com/bio2bel/chebi>`_
-- `Bio2BEL HGNC <https://github.com/bio2bel/hgnc>`_
 
 Python REPL
 ~~~~~~~~~~~
@@ -57,8 +52,8 @@ Command Line Utility
 
 Other Command Line Utilities
 ----------------------------
-- Run an admin site for simple querying and exploration :code:`python3 -m bio2bel_reactome web` (http://localhost:5000/admin/)
-- Export gene sets for programmatic use :code:`python3 -m bio2bel_reactome export`
+- Run an admin site for simple querying and exploration :code:`bio2bel_reactome web` (http://localhost:5000/admin/)
+- Export gene sets for programmatic use :code:`bio2bel_reactome export`
 
 Citation
 --------
@@ -67,8 +62,8 @@ Citation
 - Croft, David et al. “The Reactome Pathway Knowledgebase.” Nucleic Acids Research 42.Database issue (2014): D472–D477.
   PMC. Web. 6 Oct. 2017.
 
-.. |build| image:: https://travis-ci.org/bio2bel/reactome.svg?branch=master
-    :target: https://travis-ci.org/bio2bel/reactome
+.. |build| image:: https://travis-ci.com/bio2bel/reactome.svg?branch=master
+    :target: https://travis-ci.com/bio2bel/reactome
     :alt: Build Status
 
 .. |coverage| image:: https://codecov.io/gh/bio2bel/reactome/coverage.svg?branch=master
