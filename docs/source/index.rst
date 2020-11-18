@@ -6,13 +6,11 @@ Bio2BEL Reactome
    :maxdepth: 2
    :caption: Contents:
 
-   enrichment
    manager
    cli
    constants
    models
    web
-   utils
 
 Indices and tables
 ==================
